@@ -1,0 +1,62 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: help-me-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: helpme
+      POSTGRES_PASSWORD: helpme_dev_password
+      POSTGRES_DB: helpme
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - help_me_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U helpme -d helpme"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  redis:
+    image: redis:7-alpine
+    container_name: help-me-redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - help_me_redis_data:/data
+
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+volumes:
+
+  help_me_postgres_data:
+
+  help_me_redis_data: 
