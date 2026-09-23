@@ -1,0 +1,26 @@
+{
+  "name": "help-me",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HELP ME - Tell me what you need. I'll help you get it done.",
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "install:all": "pnpm install",
+    "dev": "pnpm --parallel --filter './apps/*' --filter './backend/*' dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm -r test:unit",
+    "test:integration": "pnpm -r test:integration",
+    "test:e2e": "pnpm -r test:e2e",
+    "test:security": "pnpm -r test:security",
+    "db:migrate": "pnpm --filter @help-me/backend db:migrate",
+    "db:seed": "pnpm --filter @help-me/backend db:seed",
+    "db:reset": "pnpm --filter @help-me/backend db:reset"
+  }
+} 
