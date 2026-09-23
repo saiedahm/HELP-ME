@@ -1,0 +1,67 @@
+ # Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Build
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+
+# Logs
+*.log
+logs/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Uploaded files
+uploads/
+storage/
+
+# Generated secrets
+*.pem
+*.key
+*.crt
+secrets/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+playwright-report/
+test-results/
+
+# Runtime
+.pid
+*.pid
