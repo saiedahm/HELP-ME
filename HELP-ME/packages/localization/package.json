@@ -1,0 +1,26 @@
+{
+  "name": "@help-me/localization",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Localization resources and language utilities for HELP ME.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "eslint": "^9.35.0"
+  }
+} 
