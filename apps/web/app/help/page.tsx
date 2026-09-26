@@ -1,21 +1,25 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { supportedLocales, translations, type Locale } from "../../lib/i18n";
+import { FormEvent, useMemo, useState } from "react";
+import { getLanguageName, getTranslations, languageCatalog, type Locale } from "../../lib/i18n";
 
-const examples: Record<Locale, string[]> = {
+const examples: Record<string, string[]> = {
   de: ["Ich brauche Hilfe bei meiner Website.", "Ich möchte ein digitales Projekt starten.", "Ich brauche Unterstützung bei einem technischen Problem."],
   en: ["I need help with my website.", "I want to start a digital project.", "I need help with a technical problem."],
   ar: ["أحتاج إلى مساعدة في موقعي.", "أريد بدء مشروع رقمي.", "أحتاج إلى مساعدة في مشكلة تقنية."],
 };
+
+const rtlLocales = new Set(["ar", "he", "fa", "ur"]);
 
 export default function HelpPage() {
   const [locale, setLocale] = useState<Locale>("de");
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
-  const t = translations[locale];
-  const isRtl = locale === "ar";
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const t = useMemo(() => getTranslations(locale), [locale]);
+  const currentExamples = examples[locale] ?? examples.en;
+  const isRtl = rtlLocales.has(locale);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,13 +31,13 @@ export default function HelpPage() {
       const response = await fetch("/api/help", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: value }),
+        body: JSON.stringify({ message: value, locale }),
       });
       const data = await response.json();
-      setReply(data.reply ?? data.error ?? "Unbekannte Antwort");
+      setReply(data.reply ?? data.error ?? "Unknown response");
       if (response.ok) setMessage("");
     } catch {
-      setReply("Die Anfrage konnte gerade nicht verarbeitet werden.");
+      setReply("The request could not be processed right now.");
     } finally {
       setLoading(false);
     }
@@ -43,19 +47,26 @@ export default function HelpPage() {
     <main className="help-page" dir={isRtl ? "rtl" : "ltr"} lang={locale}>
       <div className="container">
         <a className="back-link" href="/">{t.back}</a>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginBottom: 24 }}>
-          {supportedLocales.map((item) => (
-            <button key={item} type="button" onClick={() => setLocale(item)} aria-pressed={locale === item}>
-              {item.toUpperCase()}
-            </button>
-          ))}
+        <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
+          <button type="button" onClick={() => setLanguageOpen((open) => !open)} aria-expanded={languageOpen} aria-label="Choose language">
+            {getLanguageName(locale)} ▾
+          </button>
+          {languageOpen && (
+            <div role="listbox" aria-label="Languages" style={{ position: "absolute", top: "100%", zIndex: 10, maxHeight: 320, overflowY: "auto", minWidth: 190 }}>
+              {languageCatalog.map(([code, name]) => (
+                <button key={code} type="button" role="option" aria-selected={locale === code} onClick={() => { setLocale(code); setLanguageOpen(false); }} style={{ display: "block", width: "100%", textAlign: "start" }}>
+                  {name} ({code.toUpperCase()})
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <section className="assistant-card">
           <div className="eyebrow">{t.eyebrow}</div>
           <h1>{t.title}</h1>
           <p>{t.description}</p>
           <div className="example-list" aria-label="Examples">
-            {examples[locale].map((example) => (
+            {currentExamples.map((example) => (
               <button key={example} type="button" className="example-chip" onClick={() => setMessage(example)}>{example}</button>
             ))}
           </div>
