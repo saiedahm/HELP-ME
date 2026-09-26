@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { generateAiReply } from "../../../lib/ai/provider";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +21,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const result = await generateAiReply([
+      {
+        role: "system",
+        content:
+          "Du bist der HELP ME Assistent. Antworte klar, freundlich und hilfreich. Behaupte nicht, eine Aktion ausgeführt zu haben, wenn sie nicht tatsächlich ausgeführt wurde.",
+      },
+      { role: "user", content: message },
+    ]);
+
     return NextResponse.json({
       ok: true,
       received: true,
-      reply:
-        "Danke. HELP ME hat deine Anfrage erhalten. Die intelligente Assistenz wird in der nächsten Ausbaustufe mit den KI-Diensten verbunden.",
-      receivedMessage: message,
+      reply: result.content,
+      provider: result.provider,
+      model: result.model,
       nextStep: "ai-processing",
     });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    console.error("HELP ME AI request failed", error);
+    return NextResponse.json(
+      { error: "The AI service is temporarily unavailable" },
+      { status: 503 },
+    );
   }
 }
