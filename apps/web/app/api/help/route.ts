@@ -6,32 +6,51 @@ import { saveHelpRequest } from "../../../lib/help/store";
 export const dynamic = "force-dynamic";
 
 const MAX_MESSAGE_LENGTH = 5000;
+const MAX_LOCALE_LENGTH = 32;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const message = typeof body?.message === "string" ? body.message.trim() : "";
-    const locale = typeof body?.locale === "string" ? body.locale : "de";
+    const body = await request.json().catch(() => null);
 
-    if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    if (message.length > MAX_MESSAGE_LENGTH) {
+    const message =
+      typeof body.message === "string" ? body.message.trim() : "";
+    const locale =
+      typeof body.locale === "string"
+        ? body.locale.trim().slice(0, MAX_LOCALE_LENGTH)
+        : "de";
+
+    if (!message) {
       return NextResponse.json(
-        { error: `Message must not exceed ${MAX_MESSAGE_LENGTH} characters` },
+        { error: "Message is required" },
         { status: 400 },
       );
     }
 
-    const requestRecord = await saveHelpRequest({ message, locale });
-    const language = getLanguageName(locale);
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        {
+          error: `Message must not exceed ${MAX_MESSAGE_LENGTH} characters`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const requestRecord = await saveHelpRequest({
+      message,
+      locale: locale || "de",
+    });
+
+    const language = getLanguageName(locale || "de");
 
     const result = await generateAiReply([
       {
         role: "system",
         content:
-          `Du bist der HELP ME Assistent. Der Besucher bevorzugt die Sprache ${language} (${locale}). Antworte vollständig in dieser Sprache. Antworte klar, freundlich und hilfreich. Behaupte nicht, eine Aktion ausgeführt zu haben, wenn sie nicht tatsächlich ausgeführt wurde.`,
+          `Du bist der HELP ME Assistent. Der Besucher bevorzugt die Sprache ${language} (${locale || "de"}). Antworte vollständig in dieser Sprache. Antworte klar, freundlich und hilfreich. Behaupte nicht, eine Aktion ausgeführt zu haben, wenn sie nicht tatsächlich ausgeführt wurde.`,
       },
       { role: "user", content: message },
     ]);
@@ -40,16 +59,17 @@ export async function POST(request: NextRequest) {
       ok: true,
       received: true,
       requestId: requestRecord.id,
-      locale,
+      locale: locale || "de",
       reply: result.content,
       provider: result.provider,
       model: result.model,
       nextStep: "ai-processing",
     });
   } catch (error) {
-    console.error("HELP ME AI request failed", error);
+    console.error("HELP ME request failed", error);
+
     return NextResponse.json(
-      { error: "The AI service is temporarily unavailable" },
+      { error: "The HELP ME service is temporarily unavailable" },
       { status: 503 },
     );
   }
