@@ -5,12 +5,22 @@ import { requireStripe } from "@/lib/billing/stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    service: "HELP-ME Stripe Webhook",
+  });
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!signature || !secret) {
-    return NextResponse.json({ error: "Stripe webhook is not configured" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Stripe webhook is not configured" },
+      { status: 400 },
+    );
   }
 
   try {
