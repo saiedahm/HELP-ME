@@ -44,4 +44,15 @@ button, input, textarea { font: inherit; }
 .assistant-card textarea { width: 100%; resize: vertical; min-height: 150px; border: 1px solid var(--border); border-radius: 18px; background: rgba(7,17,31,.7); color: var(--text); padding: 16px; outline: none; }
 .assistant-card textarea:focus { border-color: rgba(56,189,248,.7); box-shadow: 0 0 0 3px rgba(56,189,248,.1); }
 .reply { margin-top: 20px; padding: 18px; border-radius: 16px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.2); line-height: 1.6; }
-@media (max-width: 760px) { .container { width: min(100% - 28px, 680px); } .nav { display: none; } .hero { padding: 78px 0 54px; } .grid { grid-template-columns: 1fr; padding-bottom: 60px; } }
+.legal-page { min-height: 100vh; padding: 44px 0 0; background: radial-gradient(circle at 50% 0%, rgba(16,44,72,.85), var(--background) 48%); }
+.legal-shell { max-width: 900px; }
+.legal-brand { display: flex; align-items: center; gap: 12px; margin: 28px 0 34px; font-weight: 800; letter-spacing: .08em; }
+.legal-logo { width: 52px; height: 52px; object-fit: contain; border-radius: 50%; }
+.legal-intro { color: var(--muted); line-height: 1.7; margin-bottom: 34px; }
+.legal-card { margin: 18px 0; padding: 28px; border: 1px solid var(--border); border-radius: 22px; background: linear-gradient(180deg, rgba(18,36,59,.9), rgba(13,27,46,.75)); box-shadow: 0 24px 70px rgba(0,0,0,.14); }
+.legal-card h2 { margin-top: 0; }
+.legal-card p { color: var(--muted); line-height: 1.75; }
+.legal-card a, .legal-footer a { color: var(--accent); }
+.legal-footer { margin-top: 50px; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.legal-footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 760px) { .container { width: min(100% - 28px, 680px); } .nav { display: none; } .hero { padding: 78px 0 54px; } .grid { grid-template-columns: 1fr; padding-bottom: 60px; } .legal-page { padding-top: 28px; } .legal-card { padding: 22px; } .legal-footer { flex-direction: column; } }
