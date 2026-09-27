@@ -14,6 +14,6 @@ export const BILLING_PLANS: BillingPlan[] = [
   { id: "business", name: "Business", monthlyPriceCents: 14900, yearlyPriceCents: 149000, aiRequestsPerMonth: 2500, description: "For teams and higher-volume AI work." },
 ];
 
-export function getPlan(id: BillingPlan["id"]) {
-  return BILLING_PLANS.find((plan) => plan.id === id) ?? BILLING_PLANS[0];
+export function getPlan(id: string) {
+  return BILLING_PLANS.find((plan) => plan.id === id) ?? null;
 }
