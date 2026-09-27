@@ -26,7 +26,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: "admin",
           name: "Administrator",
           email: adminEmail,
-          role: "admin",
         };
       },
     }),
@@ -40,24 +39,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!adminEmail || user.email?.trim().toLowerCase() !== adminEmail) {
         return false;
       }
-
       return account?.provider === "google" || account?.provider === "credentials";
-    },
-    async jwt({ token, user }) {
-      if (user?.email?.trim().toLowerCase() === adminEmail) {
-        token.role = "admin";
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.role) {
-        (session.user as typeof session.user & { role?: string }).role = String(token.role);
-      }
-      return session;
     },
     authorized({ auth: session, request }) {
       if (request.nextUrl.pathname.startsWith("/admin")) {
-        return Boolean(session?.user?.email && session.user.role === "admin");
+        return Boolean(session?.user?.email && session.user.email.trim().toLowerCase() === adminEmail);
       }
       return true;
     },
