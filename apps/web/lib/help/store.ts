@@ -5,37 +5,58 @@ export type HelpRequest = {
   createdAt: string;
 };
 
+const MAX_STORED_REQUESTS = 1000;
+const MAX_MESSAGE_LENGTH = 5000;
+const MAX_LOCALE_LENGTH = 32;
+
 const globalStore = globalThis as typeof globalThis & {
   __helpMeRequests?: HelpRequest[];
 };
 
-const requests = globalStore.__helpMeRequests ?? (globalStore.__helpMeRequests = []);
+const requests =
+  globalStore.__helpMeRequests ??
+  (globalStore.__helpMeRequests = []);
+
+function normalizeLocale(locale?: string): string {
+  const value = typeof locale === "string" ? locale.trim() : "de";
+  return (value || "de").slice(0, MAX_LOCALE_LENGTH);
+}
+
+function normalizeMessage(message: string): string {
+  return message.trim().slice(0, MAX_MESSAGE_LENGTH);
+}
 
 /**
- * Server-side persistence boundary.
- * Keeps requests available for the lifetime of the running server and leaves
- * a clean adapter point for a managed database when database credentials are
- * configured. No secrets are stored in source code.
+ * Temporary server-side request store.
+ * This adapter intentionally keeps persistence behind a small API so it can
+ * be replaced by PostgreSQL without changing the HELP ME API contract.
  */
 export async function saveHelpRequest(input: {
   message: string;
   locale?: string;
 }): Promise<HelpRequest> {
+  const message = normalizeMessage(input.message);
+
+  if (!message) {
+    throw new Error("Message is required");
+  }
+
   const request: HelpRequest = {
     id: crypto.randomUUID(),
-    message: input.message,
-    locale: input.locale ?? "de",
+    message,
+    locale: normalizeLocale(input.locale),
     createdAt: new Date().toISOString(),
   };
 
   requests.unshift(request);
 
-  // Avoid unbounded memory growth until a managed database adapter is used.
-  if (requests.length > 1000) requests.length = 1000;
+  if (requests.length > MAX_STORED_REQUESTS) {
+    requests.length = MAX_STORED_REQUESTS;
+  }
 
   return request;
 }
 
 export async function getHelpRequests(): Promise<HelpRequest[]> {
-  return [...requests];
+  return requests.map((request) => ({ ...request }));
 }
