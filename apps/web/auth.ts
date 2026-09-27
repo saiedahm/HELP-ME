@@ -35,8 +35,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (!adminEmail || user.email?.trim().toLowerCase() !== adminEmail) return false;
-      return account?.provider === "google" || account?.provider === "facebook" || account?.provider === "credentials";
+      if (!user.email || !account) return false;
+      return ["google", "facebook", "credentials"].includes(account.provider);
     },
     authorized({ auth: session, request }) {
       if (request.nextUrl.pathname.startsWith("/admin")) {
