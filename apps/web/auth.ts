@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Facebook from "next-auth/providers/facebook";
 
 const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 const adminPassword = process.env.ADMIN_PASSWORD;
@@ -18,28 +19,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const email = String(credentials?.email ?? "").trim().toLowerCase();
         const password = String(credentials?.password ?? "");
-
         if (!adminEmail || !adminPassword) return null;
         if (email !== adminEmail || password !== adminPassword) return null;
-
-        return {
-          id: "admin",
-          name: "Administrator",
-          email: adminEmail,
-        };
+        return { id: "admin", name: "Administrator", email: adminEmail };
       },
     }),
     Google({
       clientId: process.env.AUTH_GOOGLE_ID ?? "",
       clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "",
     }),
+    Facebook({
+      clientId: process.env.AUTH_FACEBOOK_ID ?? "",
+      clientSecret: process.env.AUTH_FACEBOOK_SECRET ?? "",
+    }),
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (!adminEmail || user.email?.trim().toLowerCase() !== adminEmail) {
-        return false;
-      }
-      return account?.provider === "google" || account?.provider === "credentials";
+      if (!adminEmail || user.email?.trim().toLowerCase() !== adminEmail) return false;
+      return account?.provider === "google" || account?.provider === "facebook" || account?.provider === "credentials";
     },
     authorized({ auth: session, request }) {
       if (request.nextUrl.pathname.startsWith("/admin")) {
