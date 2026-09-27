@@ -9,7 +9,10 @@ export default function HomePage() {
     <main>
       <header className="header">
         <div className="container header-inner">
-          <a className="brand" href="#top">HELP ME</a>
+          <a className="brand" href="#top" aria-label="HELP-ME Startseite">
+            <img src="/help-me-logo.png" alt="HELP-ME" style={{ width: 38, height: 38, objectFit: "contain", borderRadius: "50%", verticalAlign: "middle", marginRight: 10 }} />
+            HELP ME
+          </a>
           <nav className="nav" aria-label="Hauptnavigation">
             <a href="#how">So funktioniert es</a>
             <a href="#features">Funktionen</a>
@@ -52,12 +55,23 @@ export default function HomePage() {
         <div className="card">
           <div className="eyebrow">Kontakt</div>
           <h2>HELP ME wird Schritt für Schritt erweitert.</h2>
-          <p>Öffentliche Unternehmens- und Rechtsangaben werden erst nach finaler Prüfung der Angaben eingebunden.</p>
+          <p>Für Fragen zur Plattform erreichen Sie uns unter <a href="mailto:info@nexoraonline.de" style={{ color: "var(--accent)" }}>info@nexoraonline.de</a>.</p>
+          <p>Die Plattform befindet sich aktuell in der Testphase.</p>
         </div>
       </section>
 
       <footer className="footer">
-        <div className="container">© {new Date().getFullYear()} HELP ME. Alle Rechte vorbehalten.</div>
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
+          <span>© {new Date().getFullYear()} HELP ME. Alle Rechte vorbehalten.</span>
+          <nav aria-label="Rechtliche Navigation" style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <a href="mailto:info@nexoraonline.de">info@nexoraonline.de</a>
+            <a href="/legal#widerruf">Widerruf</a>
+            <a href="/legal#agb">AGB</a>
+            <a href="/legal#datenschutz">Datenschutz</a>
+            <a href="/legal#impressum">Impressum</a>
+            <a href="/legal#cookies">Cookie-Einstellungen</a>
+          </nav>
+        </div>
       </footer>
     </main>
   );
