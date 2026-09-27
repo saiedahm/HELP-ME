@@ -19,11 +19,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = String(credentials?.email ?? "").trim().toLowerCase();
         const password = String(credentials?.password ?? "");
 
-        if (!adminEmail || !adminPassword || email !== adminEmail || password !== adminPassword) {
-          return null;
-        }
+        if (!adminEmail || !adminPassword) return null;
+        if (email !== adminEmail || password !== adminPassword) return null;
 
-        return { id: "admin", name: "Administrator", email: adminEmail };
+        return {
+          id: "admin",
+          name: "Administrator",
+          email: adminEmail,
+          role: "admin",
+        };
       },
     }),
     Google({
@@ -33,17 +37,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (!adminEmail || !user.email || user.email.toLowerCase() !== adminEmail) {
+      if (!adminEmail || user.email?.trim().toLowerCase() !== adminEmail) {
         return false;
       }
-      if (account?.provider === "google" || account?.provider === "credentials") {
-        return true;
+
+      return account?.provider === "google" || account?.provider === "credentials";
+    },
+    async jwt({ token, user }) {
+      if (user?.email?.trim().toLowerCase() === adminEmail) {
+        token.role = "admin";
       }
-      return false;
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.role) {
+        session.user.role = String(token.role);
+      }
+      return session;
     },
     authorized({ auth: session, request }) {
-      const pathname = request.nextUrl.pathname;
-      if (pathname.startsWith("/admin")) return Boolean(session?.user);
+      if (request.nextUrl.pathname.startsWith("/admin")) {
+        return Boolean(session?.user?.email && session.user.role === "admin");
+      }
       return true;
     },
   },
