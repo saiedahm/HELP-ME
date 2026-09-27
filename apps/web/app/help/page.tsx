@@ -46,7 +46,11 @@ export default function HelpPage() {
   return (
     <main className="help-page" dir={isRtl ? "rtl" : "ltr"} lang={locale}>
       <div className="container">
-        <a className="back-link" href="/">{t.back}</a>
+        <a className="back-link" href="/">← HELP-ME</a>
+        <div className="help-brand">
+          <img src="/help-me-logo.png" alt="HELP-ME" />
+          <span>HELP-ME</span>
+        </div>
         <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
           <button type="button" onClick={() => setLanguageOpen((open) => !open)} aria-expanded={languageOpen} aria-label="Choose language">
             {getLanguageName(locale)} ▾
