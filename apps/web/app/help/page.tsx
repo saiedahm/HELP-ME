@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState, type ReactNode } from "react";
+import { FormEvent, useMemo, useRef, useState, type ReactNode } from "react";
 import { getLanguageName, getTranslations, languageCatalog, type Locale } from "../../lib/i18n";
 
 const examples: Record<string, string[]> = {
@@ -79,7 +79,7 @@ export default function HelpPage() {
   const [loading, setLoading] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useState<{ current: any }>({ current: null })[0];
+  const recognitionRef = useRef<any>(null);
   const t = useMemo(() => getTranslations(locale), [locale]);
   const currentExamples = examples[locale] ?? examples.en;
   const isRtl = rtlLocales.has(locale);
@@ -94,13 +94,13 @@ export default function HelpPage() {
     if (isListening) { recognitionRef.current?.stop(); return; }
     const recognition = new SpeechRecognition();
     recognition.lang = locale === "de" ? "de-DE" : locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "nl" ? "nl-NL" : locale === "pl" ? "pl-PL" : locale === "tr" ? "tr-TR" : locale === "pt" ? "pt-PT" : locale === "ru" ? "ru-RU" : locale === "zh" ? "zh-CN" : locale === "ja" ? "ja-JP" : "en-US";
-    recognition.interimResults = true;
+    recognition.interimResults = false;
     recognition.continuous = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setIsListening(true);
     recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results).map((result: any) => result[0]?.transcript ?? "").join("");
-      setMessage((current) => `${current}${current ? " " : ""}${transcript}`.slice(0, 5000));
+      const transcript = Array.from(event.results).filter((result: any) => result.isFinal).map((result: any) => result[0]?.transcript ?? "").join(" ").trim();
+      if (transcript) setMessage((current) => `${current}${current ? " " : ""}${transcript}`.slice(0, 5000));
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
