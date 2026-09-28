@@ -15,10 +15,7 @@ type ChatMessage = { id: number; role: "user" | "assistant"; text: string };
 type MarkdownPart = { type: "text" | "bold"; value: string };
 
 function normalizeMarkdown(value: string) {
-  return value
-    .replace(/\\\*\\\*/g, "**")
-    .replace(/\\-/g, "-")
-    .replace(/\\_/g, "_");
+  return value.replace(/\\\*\\\*/g, "**").replace(/\\-/g, "-").replace(/\\_/g, "_");
 }
 
 function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode {
@@ -29,17 +26,11 @@ function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode {
   let match: RegExpExecArray | null;
 
   while ((match = boldPattern.exec(normalized)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({ type: "text", value: normalized.slice(lastIndex, match.index) });
-    }
+    if (match.index > lastIndex) parts.push({ type: "text", value: normalized.slice(lastIndex, match.index) });
     parts.push({ type: "bold", value: match[1] });
     lastIndex = match.index + match[0].length;
   }
-
-  if (lastIndex < normalized.length) {
-    parts.push({ type: "text", value: normalized.slice(lastIndex) });
-  }
-
+  if (lastIndex < normalized.length) parts.push({ type: "text", value: normalized.slice(lastIndex) });
   if (parts.length === 0) return normalized;
 
   return parts.map((part, index) =>
@@ -56,12 +47,10 @@ function renderAssistantMarkdown(text: string): ReactNode {
   let listItems: string[] = [];
 
   const flushList = () => {
-    if (listItems.length === 0) return;
+    if (!listItems.length) return;
     blocks.push(
       <ul key={`list-${blocks.length}`} className="chat-markdown-list">
-        {listItems.map((item, index) => (
-          <li key={`item-${index}`}>{renderInlineMarkdown(item, `item-${index}`)}</li>
-        ))}
+        {listItems.map((item, index) => <li key={`item-${index}`}>{renderInlineMarkdown(item, `item-${index}`)}</li>)}
       </ul>,
     );
     listItems = [];
@@ -70,20 +59,13 @@ function renderAssistantMarkdown(text: string): ReactNode {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
-
     if (listMatch) {
       listItems.push(listMatch[1]);
       return;
     }
-
     flushList();
     if (!trimmed) return;
-
-    blocks.push(
-      <p key={`paragraph-${index}`} className="chat-markdown-paragraph">
-        {renderInlineMarkdown(trimmed, `paragraph-${index}`)}
-      </p>,
-    );
+    blocks.push(<p key={`paragraph-${index}`} className="chat-markdown-paragraph">{renderInlineMarkdown(trimmed, `paragraph-${index}`)}</p>);
   });
 
   flushList();
@@ -105,11 +87,9 @@ export default function HelpPage() {
     const value = message.trim();
     if (!value || loading) return;
 
-    const userMessage: ChatMessage = { id: Date.now(), role: "user", text: value };
-    setMessages((current) => [...current, userMessage]);
+    setMessages((current) => [...current, { id: Date.now(), role: "user", text: value }]);
     setMessage("");
     setLoading(true);
-
     try {
       const response = await fetch("/api/help", {
         method: "POST",
@@ -131,7 +111,7 @@ export default function HelpPage() {
       <div className="container">
         <a className="back-link" href="/">← HELP-ME</a>
         <div className="help-brand">
-          <img src="/help-me-logo.png" alt="HELP-ME" />
+          <div aria-label="HELP-ME robot logo" role="img" style={{ fontSize: 48, lineHeight: 1 }}>🤖</div>
           <span>HELP-ME</span>
         </div>
         <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
@@ -177,9 +157,7 @@ export default function HelpPage() {
           </div>
 
           <div className="example-list" aria-label="Examples">
-            {currentExamples.map((example) => (
-              <button key={example} type="button" className="example-chip" onClick={() => setMessage(example)}>{example}</button>
-            ))}
+            {currentExamples.map((example) => <button key={example} type="button" className="example-chip" onClick={() => setMessage(example)}>{example}</button>)}
           </div>
 
           <form onSubmit={submit} className="chat-input-form">
