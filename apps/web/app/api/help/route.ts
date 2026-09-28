@@ -8,6 +8,14 @@ export const dynamic = "force-dynamic";
 const MAX_MESSAGE_LENGTH = 5000;
 const MAX_LOCALE_LENGTH = 32;
 
+function safeErrorDetail(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error || "Unknown error");
+  return raw
+    .replace(/sk-[A-Za-z0-9_-]+/g, "[redacted-key]")
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [redacted]")
+    .slice(0, 500);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
@@ -22,10 +30,7 @@ export async function POST(request: NextRequest) {
         ? body.locale.trim().slice(0, MAX_LOCALE_LENGTH)
         : "de";
 
-    if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
-    }
-
+    if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
     if (message.length > MAX_MESSAGE_LENGTH) {
       return NextResponse.json(
         { error: `Message must not exceed ${MAX_MESSAGE_LENGTH} characters` },
@@ -33,19 +38,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // AI is the critical path. A database failure must never turn a valid
-    // AI answer into a fake "AI unavailable" response in the chat UI.
     const result = await executeAI(message, locale || "de");
 
     let requestId: string | undefined;
     try {
-      const requestRecord = await saveHelpRequest({
-        message,
-        locale: locale || "de",
-      });
-      requestId = requestRecord.id;
+      requestId = (await saveHelpRequest({ message, locale: locale || "de" })).id;
     } catch (storageError) {
-      console.error("HELP ME request storage failed after successful AI response", storageError);
+      console.error("HELP ME storage failed after successful AI response", storageError);
     }
 
     return NextResponse.json({
@@ -59,16 +58,13 @@ export async function POST(request: NextRequest) {
       agents: result.agents,
     });
   } catch (error) {
-    console.error("HELP ME AI request failed", error);
-
-    const errorMessage = error instanceof Error ? error.message : "Unknown AI error";
-    const isConfigError = /OPENAI_API_KEY|OPENAI_MODEL|credential|api key/i.test(errorMessage);
+    const detail = safeErrorDetail(error);
+    console.error("HELP ME AI request failed:", detail);
 
     return NextResponse.json(
       {
-        error: isConfigError
-          ? "HELP ME AI is not configured correctly yet."
-          : "HELP ME AI could not answer this request right now.",
+        error: "HELP ME AI could not answer this request right now.",
+        detail,
       },
       { status: 503 },
     );
