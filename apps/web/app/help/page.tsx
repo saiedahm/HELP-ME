@@ -78,9 +78,35 @@ export default function HelpPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useState<{ current: any }>({ current: null })[0];
   const t = useMemo(() => getTranslations(locale), [locale]);
   const currentExamples = examples[locale] ?? examples.en;
   const isRtl = rtlLocales.has(locale);
+
+  function startVoiceInput() {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      window.alert("Spracherkennung wird von diesem Browser nicht unterstützt.");
+      return;
+    }
+    if (isListening) { recognitionRef.current?.stop(); return; }
+    const recognition = new SpeechRecognition();
+    recognition.lang = locale === "de" ? "de-DE" : locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "nl" ? "nl-NL" : locale === "pl" ? "pl-PL" : locale === "tr" ? "tr-TR" : locale === "pt" ? "pt-PT" : locale === "ru" ? "ru-RU" : locale === "zh" ? "zh-CN" : locale === "ja" ? "ja-JP" : "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results).map((result: any) => result[0]?.transcript ?? "").join("");
+      setMessage((current) => `${current}${current ? " " : ""}${transcript}`.slice(0, 5000));
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,7 +190,7 @@ export default function HelpPage() {
             <label htmlFor="help-message">{t.label}</label>
             <div className="chat-input-row">
               <textarea id="help-message" value={message} onChange={(event) => setMessage(event.target.value)} placeholder={t.placeholder} rows={2} maxLength={5000} required />
-              <button className="button primary chat-send" type="submit" disabled={loading || !message.trim()} aria-label={t.submit}>➤</button>
+              <button className={`button chat-voice ${isListening ? "listening" : ""}`} type="button" onClick={startVoiceInput} aria-label={isListening ? "Stop voice input" : "Voice input"} title={isListening ? "Stop voice input" : "Voice input"}>{isListening ? "■" : "🎙️"}</button><button className="button primary chat-send" type="submit" disabled={loading || !message.trim()} aria-label={t.submit}>➤</button>
             </div>
             <div className="form-footer"><span>{message.length}/5000</span><span>{loading ? t.loading : ""}</span></div>
           </form>
