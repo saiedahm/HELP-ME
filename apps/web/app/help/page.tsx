@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState, type ReactNode } from "react";
 import { getLanguageName, getTranslations, languageCatalog, type Locale } from "../../lib/i18n";
 
 const examples: Record<string, string[]> = {
@@ -12,14 +12,16 @@ const examples: Record<string, string[]> = {
 const rtlLocales = new Set(["ar", "he", "fa", "ur"]);
 
 type ChatMessage = { id: number; role: "user" | "assistant"; text: string };
-
 type MarkdownPart = { type: "text" | "bold"; value: string };
 
 function normalizeMarkdown(value: string) {
-  return value.replace(/\\\\\*\\\\\*/g, "**").replace(/\\\\-/g, "-").replace(/\\\\_/g, "_");
+  return value
+    .replace(/\\\*\\\*/g, "**")
+    .replace(/\\-/g, "-")
+    .replace(/\\_/g, "_");
 }
 
-function renderInlineMarkdown(value: string, keyPrefix: string) {
+function renderInlineMarkdown(value: string, keyPrefix: string): ReactNode {
   const normalized = normalizeMarkdown(value);
   const parts: MarkdownPart[] = [];
   const boldPattern = /\*\*(.+?)\*\*/g;
@@ -41,14 +43,16 @@ function renderInlineMarkdown(value: string, keyPrefix: string) {
   if (parts.length === 0) return normalized;
 
   return parts.map((part, index) =>
-    part.type === "bold" ? <strong key={`${keyPrefix}-bold-${index}`}>{part.value}</strong> : <span key={`${keyPrefix}-text-${index}`}>{part.value}</span>,
+    part.type === "bold"
+      ? <strong key={`${keyPrefix}-bold-${index}`}>{part.value}</strong>
+      : <span key={`${keyPrefix}-text-${index}`}>{part.value}</span>,
   );
 }
 
-function renderAssistantMarkdown(text: string) {
+function renderAssistantMarkdown(text: string): ReactNode {
   const normalized = normalizeMarkdown(text).replace(/\r\n/g, "\n").trim();
   const lines = normalized.split("\n");
-  const blocks: React.ReactNode[] = [];
+  const blocks: ReactNode[] = [];
   let listItems: string[] = [];
 
   const flushList = () => {
@@ -73,7 +77,6 @@ function renderAssistantMarkdown(text: string) {
     }
 
     flushList();
-
     if (!trimmed) return;
 
     blocks.push(
@@ -115,15 +118,9 @@ export default function HelpPage() {
       });
       const data = await response.json().catch(() => ({}));
       const reply = data.reply ?? data.error ?? "HELP-ME could not answer this request right now.";
-      setMessages((current) => [
-        ...current,
-        { id: Date.now() + 1, role: "assistant", text: reply },
-      ]);
+      setMessages((current) => [...current, { id: Date.now() + 1, role: "assistant", text: reply }]);
     } catch {
-      setMessages((current) => [
-        ...current,
-        { id: Date.now() + 1, role: "assistant", text: "HELP-ME could not connect to the service right now." },
-      ]);
+      setMessages((current) => [...current, { id: Date.now() + 1, role: "assistant", text: "HELP-ME could not connect to the service right now." }]);
     } finally {
       setLoading(false);
     }
@@ -159,10 +156,7 @@ export default function HelpPage() {
 
           <div className="chat-window" aria-live="polite">
             {messages.length === 0 ? (
-              <div className="chat-empty">
-                <strong>HELP-ME AI</strong>
-                <span> {t.description}</span>
-              </div>
+              <div className="chat-empty"><strong>HELP-ME AI</strong><span> {t.description}</span></div>
             ) : (
               messages.map((item) => (
                 <div key={item.id} className={`chat-row ${item.role}`}>
