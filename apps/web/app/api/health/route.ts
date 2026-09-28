@@ -7,6 +7,8 @@ export async function GET() {
     ok: true,
     service: "help-me-web",
     status: "operational",
+    openaiConfigured: Boolean(process.env.OPENAI_API_KEY),
+    openaiModel: process.env.OPENAI_MODEL || "gpt-5-mini",
     timestamp: new Date().toISOString(),
   });
 }
