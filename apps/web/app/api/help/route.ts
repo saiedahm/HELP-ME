@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAiReply } from "../../../lib/ai/provider";
-import { getLanguageName } from "../../../lib/i18n";
+import { executeAI } from "../../../lib/ai/openai";
 import { saveHelpRequest } from "../../../lib/help/store";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_MESSAGE_LENGTH = 5000;
@@ -32,9 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (message.length > MAX_MESSAGE_LENGTH) {
       return NextResponse.json(
-        {
-          error: `Message must not exceed ${MAX_MESSAGE_LENGTH} characters`,
-        },
+        { error: `Message must not exceed ${MAX_MESSAGE_LENGTH} characters` },
         { status: 400 },
       );
     }
@@ -44,26 +42,17 @@ export async function POST(request: NextRequest) {
       locale: locale || "de",
     });
 
-    const language = getLanguageName(locale || "de");
-
-    const result = await generateAiReply([
-      {
-        role: "system",
-        content:
-          `Du bist der HELP ME Assistent. Der Besucher bevorzugt die Sprache ${language} (${locale || "de"}). Antworte vollständig in dieser Sprache. Antworte klar, freundlich und hilfreich. Behaupte nicht, eine Aktion ausgeführt zu haben, wenn sie nicht tatsächlich ausgeführt wurde.`,
-      },
-      { role: "user", content: message },
-    ]);
+    const result = await executeAI(message, locale || "de");
 
     return NextResponse.json({
       ok: true,
       received: true,
       requestId: requestRecord.id,
       locale: locale || "de",
-      reply: result.content,
-      provider: result.provider,
-      model: result.model,
-      nextStep: "ai-processing",
+      reply: result.answer,
+      provider: "openai",
+      model: process.env.OPENAI_MODEL || "gpt-5-mini",
+      agents: result.agents,
     });
   } catch (error) {
     console.error("HELP ME request failed", error);
