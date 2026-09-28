@@ -13,6 +13,80 @@ const rtlLocales = new Set(["ar", "he", "fa", "ur"]);
 
 type ChatMessage = { id: number; role: "user" | "assistant"; text: string };
 
+type MarkdownPart = { type: "text" | "bold"; value: string };
+
+function normalizeMarkdown(value: string) {
+  return value.replace(/\\\\\*\\\\\*/g, "**").replace(/\\\\-/g, "-").replace(/\\\\_/g, "_");
+}
+
+function renderInlineMarkdown(value: string, keyPrefix: string) {
+  const normalized = normalizeMarkdown(value);
+  const parts: MarkdownPart[] = [];
+  const boldPattern = /\*\*(.+?)\*\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = boldPattern.exec(normalized)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "text", value: normalized.slice(lastIndex, match.index) });
+    }
+    parts.push({ type: "bold", value: match[1] });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < normalized.length) {
+    parts.push({ type: "text", value: normalized.slice(lastIndex) });
+  }
+
+  if (parts.length === 0) return normalized;
+
+  return parts.map((part, index) =>
+    part.type === "bold" ? <strong key={`${keyPrefix}-bold-${index}`}>{part.value}</strong> : <span key={`${keyPrefix}-text-${index}`}>{part.value}</span>,
+  );
+}
+
+function renderAssistantMarkdown(text: string) {
+  const normalized = normalizeMarkdown(text).replace(/\r\n/g, "\n").trim();
+  const lines = normalized.split("\n");
+  const blocks: React.ReactNode[] = [];
+  let listItems: string[] = [];
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    blocks.push(
+      <ul key={`list-${blocks.length}`} className="chat-markdown-list">
+        {listItems.map((item, index) => (
+          <li key={`item-${index}`}>{renderInlineMarkdown(item, `item-${index}`)}</li>
+        ))}
+      </ul>,
+    );
+    listItems = [];
+  };
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
+
+    if (listMatch) {
+      listItems.push(listMatch[1]);
+      return;
+    }
+
+    flushList();
+
+    if (!trimmed) return;
+
+    blocks.push(
+      <p key={`paragraph-${index}`} className="chat-markdown-paragraph">
+        {renderInlineMarkdown(trimmed, `paragraph-${index}`)}
+      </p>,
+    );
+  });
+
+  flushList();
+  return <div className="chat-markdown">{blocks}</div>;
+}
+
 export default function HelpPage() {
   const [locale, setLocale] = useState<Locale>("de");
   const [message, setMessage] = useState("");
@@ -95,7 +169,7 @@ export default function HelpPage() {
                   <div className="chat-avatar">{item.role === "user" ? "👤" : "🤖"}</div>
                   <div className="chat-bubble">
                     <div className="chat-label">{item.role === "user" ? "You" : "HELP-ME AI"}</div>
-                    <div>{item.text}</div>
+                    {item.role === "assistant" ? renderAssistantMarkdown(item.text) : <div>{item.text}</div>}
                   </div>
                 </div>
               ))
