@@ -1,4 +1,4 @@
-const features = [
+import LegalContactControls from "../components/legal-contact-controls";\n\nconst features = [
   { title: "Einfach starten", text: "Beschreibe, was du brauchst. HELP ME strukturiert den nächsten sinnvollen Schritt." },
   { title: "KI-gestützte Hilfe", text: "Eine modulare Grundlage für intelligente Assistenz, Automatisierung und zukünftige Agenten." },
   { title: "Für Menschen gemacht", text: "Transparente Abläufe, verständliche Informationen und eine Oberfläche ohne unnötige Komplexität." },
