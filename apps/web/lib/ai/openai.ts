@@ -1,53 +1,50 @@
 import OpenAI from "openai";
-import { buildAgentPrompt, buildOrchestratorPrompt, createRoutingPlan } from "./orchestrator";
-import type { AgentDefinition } from "./agents";
+import { createRoutingPlan } from "./orchestrator";
 
 export type AIExecutionResult = {
   answer: string;
   agents: string[];
 };
 
-async function runAgent(
-  client: OpenAI,
+export async function executeAI(
   input: string,
-  language: string,
-  agent: AgentDefinition,
-) {
-  const response = await client.responses.create({
-    model: process.env.OPENAI_MODEL || "gpt-5-mini",
-    instructions: buildAgentPrompt({ input, language }, agent),
-    input,
-  });
-  return { agent, output: response.output_text };
-}
-
-export async function executeAI(input: string, language = "de"): Promise<AIExecutionResult> {
+  language = "de",
+): Promise<AIExecutionResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
 
-  // Create the SDK client only when the API route is actually executed.
-  // This prevents Next.js/Vercel build-time page-data collection from
-  // failing when the production secret is not available during build.
-  const client = new OpenAI({ apiKey });
-
-  const plan = createRoutingPlan({ input, language });
-  const results = await Promise.all(
-    plan.agents.map((agent) => runAgent(client, input, language, agent)),
-  );
-  const findings = results
-    .map(({ agent, output }) => `### ${agent.name}\n${output}`)
-    .join("\n\n");
-
-  const finalResponse = await client.responses.create({
-    model: process.env.OPENAI_MODEL || "gpt-5-mini",
-    instructions: buildOrchestratorPrompt({ input, language }, plan.agents),
-    input: `User request:\n${input}\n\nSpecialist findings:\n${findings}`,
+  // Keep the first production chat path deliberately simple and reliable:
+  // one Responses API call. Specialist-agent fan-out can be enabled later
+  // after the basic user conversation path is proven in production.
+  const client = new OpenAI({
+    apiKey,
+    maxRetries: 2,
   });
 
+  const plan = createRoutingPlan({ input, language });
+  const model = process.env.OPENAI_MODEL || "gpt-5-mini";
+
+  const response = await client.responses.create({
+    model,
+    instructions: [
+      "You are HELP-ME, a practical multilingual assistant for people living, working, travelling, or settling in a foreign country.",
+      `Answer in the user's requested language: ${language}.`,
+      "Be clear, practical, respectful, and concise.",
+      "Do not claim that you completed an external action unless it was actually completed.",
+      "When a question depends on current local information, explain what information is needed to verify it.",
+    ].join("\n"),
+    input,
+  });
+
+  const answer = response.output_text?.trim();
+  if (!answer) {
+    throw new Error("OpenAI returned an empty response");
+  }
+
   return {
-    answer: finalResponse.output_text,
-    agents: results.map(({ agent }) => agent.id),
+    answer,
+    agents: plan.agents.map((agent) => agent.id),
   };
 }
