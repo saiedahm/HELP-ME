@@ -16,18 +16,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const message =
-      typeof body.message === "string" ? body.message.trim() : "";
+    const message = typeof body.message === "string" ? body.message.trim() : "";
     const locale =
       typeof body.locale === "string"
         ? body.locale.trim().slice(0, MAX_LOCALE_LENGTH)
         : "de";
 
     if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
     if (message.length > MAX_MESSAGE_LENGTH) {
@@ -37,12 +33,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the AI answer first. We only persist a request after a successful
+    // answer so the UI never shows a sent-but-unanswered request as success.
+    const result = await executeAI(message, locale || "de");
     const requestRecord = await saveHelpRequest({
       message,
       locale: locale || "de",
     });
-
-    const result = await executeAI(message, locale || "de");
 
     return NextResponse.json({
       ok: true,
@@ -57,8 +54,15 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("HELP ME request failed", error);
 
+    const message = error instanceof Error ? error.message : "Unknown AI error";
+    const isConfigError = /OPENAI_API_KEY|OPENAI_MODEL|credential/i.test(message);
+
     return NextResponse.json(
-      { error: "The HELP ME service is temporarily unavailable" },
+      {
+        error: isConfigError
+          ? "HELP ME AI is not configured correctly yet."
+          : "HELP ME AI could not answer this request right now.",
+      },
       { status: 503 },
     );
   }
