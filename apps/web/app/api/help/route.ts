@@ -33,29 +33,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the AI answer first. We only persist a request after a successful
-    // answer so the UI never shows a sent-but-unanswered request as success.
+    // AI is the critical path. A database failure must never turn a valid
+    // AI answer into a fake "AI unavailable" response in the chat UI.
     const result = await executeAI(message, locale || "de");
-    const requestRecord = await saveHelpRequest({
-      message,
-      locale: locale || "de",
-    });
+
+    let requestId: string | undefined;
+    try {
+      const requestRecord = await saveHelpRequest({
+        message,
+        locale: locale || "de",
+      });
+      requestId = requestRecord.id;
+    } catch (storageError) {
+      console.error("HELP ME request storage failed after successful AI response", storageError);
+    }
 
     return NextResponse.json({
       ok: true,
       received: true,
-      requestId: requestRecord.id,
+      requestId,
       locale: locale || "de",
       reply: result.answer,
       provider: "openai",
-      model: process.env.OPENAI_MODEL || "gpt-5-mini",
+      model: process.env.OPENAI_MODEL || "gpt-5.6-luna",
       agents: result.agents,
     });
   } catch (error) {
-    console.error("HELP ME request failed", error);
+    console.error("HELP ME AI request failed", error);
 
-    const message = error instanceof Error ? error.message : "Unknown AI error";
-    const isConfigError = /OPENAI_API_KEY|OPENAI_MODEL|credential/i.test(message);
+    const errorMessage = error instanceof Error ? error.message : "Unknown AI error";
+    const isConfigError = /OPENAI_API_KEY|OPENAI_MODEL|credential|api key/i.test(errorMessage);
 
     return NextResponse.json(
       {
