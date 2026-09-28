@@ -1,0 +1,4 @@
+HELP-ME deployment verification marker.
+Latest OpenAI build fix: b3159af4.
+Latest AI/chat connection: 49663f9.
+Deployment verification trigger: 2026-09-28.
