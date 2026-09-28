@@ -12,6 +12,10 @@ export async function POST(request: Request) {
     const interval = body?.interval === "year" ? "year" : "month";
     const plan = getPlan(planId as Parameters<typeof getPlan>[0]);
 
+    if (!plan) {
+      return NextResponse.json({ error: "Invalid billing plan" }, { status: 400 });
+    }
+
     if (plan.id === "free") {
       return NextResponse.json({ error: "Free plan does not require checkout" }, { status: 400 });
     }
