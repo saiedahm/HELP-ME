@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import AccessGate from "../components/access-gate";
+import MembershipButton from "../components/membership-button";
 
 export const metadata: Metadata = {
   title: "HELP ME",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="de">
       <body>
         {children}
+        <MembershipButton />
         <AccessGate />
       </body>
     </html>
