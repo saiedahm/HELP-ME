@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MembershipButton from "./components/membership-button";
 
 const features = [
   { title: "Einfach starten", text: "Beschreibe, was du brauchst. HELP ME strukturiert den nächsten sinnvollen Schritt." },
@@ -19,7 +20,7 @@ export default function HomePage() {
             <a href="#how">So funktioniert es</a>
             <a href="#features">Funktionen</a>
             <a href="/help">Jetzt Hilfe erhalten</a>
-            <Link href="/?subscribe=member" className="membership-link">⭐ Mitgliedschaft 4,99 €/Monat</Link>
+            <MembershipButton compact />
             <a href="#contact">Kontakt</a>
           </nav>
         </div>
@@ -33,7 +34,7 @@ export default function HomePage() {
           <div className="actions">
             <a className="button primary" href="/help">Jetzt Hilfe erhalten</a>
             <a className="button" href="#how">Entdecken</a>
-            <Link className="button" href="/?subscribe=member">⭐ HELP-ME Mitgliedschaft · 4,99 €/Monat</Link>
+            <MembershipButton />
           </div>
         </div>
       </section>
@@ -59,8 +60,8 @@ export default function HomePage() {
         <div className="card membership-card">
           <div className="eyebrow">Mitgliedschaft</div>
           <h2>HELP-ME Membership · 4,99 € pro Monat</h2>
-          <p>Für Menschen, die HELP-ME regelmäßig nutzen möchten. Monatliche automatische Verlängerung, sichere Zahlung über Stripe und weltweite Nutzung.</p>
-          <Link className="button primary" href="/?subscribe=member">Jetzt abonnieren</Link>
+          <p>Monatliche automatische Verlängerung, sichere Zahlung über Stripe und weltweite Nutzung.</p>
+          <MembershipButton />
         </div>
       </section>
 
