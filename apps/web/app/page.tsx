@@ -1,4 +1,6 @@
-import LegalContactControls from "../components/legal-contact-controls";\n\nconst features = [
+import Link from "next/link";
+
+const features = [
   { title: "Einfach starten", text: "Beschreibe, was du brauchst. HELP ME strukturiert den nächsten sinnvollen Schritt." },
   { title: "KI-gestützte Hilfe", text: "Eine modulare Grundlage für intelligente Assistenz, Automatisierung und zukünftige Agenten." },
   { title: "Für Menschen gemacht", text: "Transparente Abläufe, verständliche Informationen und eine Oberfläche ohne unnötige Komplexität." },
@@ -17,6 +19,7 @@ export default function HomePage() {
             <a href="#how">So funktioniert es</a>
             <a href="#features">Funktionen</a>
             <a href="/help">Jetzt Hilfe erhalten</a>
+            <Link href="/?subscribe=member" className="membership-link">⭐ Mitgliedschaft 4,99 €/Monat</Link>
             <a href="#contact">Kontakt</a>
           </nav>
         </div>
@@ -30,6 +33,7 @@ export default function HomePage() {
           <div className="actions">
             <a className="button primary" href="/help">Jetzt Hilfe erhalten</a>
             <a className="button" href="#how">Entdecken</a>
+            <Link className="button" href="/?subscribe=member">⭐ HELP-ME Mitgliedschaft · 4,99 €/Monat</Link>
           </div>
         </div>
       </section>
@@ -48,6 +52,15 @@ export default function HomePage() {
           <div className="eyebrow">Plattform</div>
           <h2>Eine stabile Basis für eine globale digitale Assistenzplattform</h2>
           <p>Web-App, API-Client, gemeinsame Typen, Lokalisierung und Validierung bleiben modular organisiert. So können Authentifizierung, Datenbank, KI-Dienste, Zahlungen und weitere Funktionen sauber angebunden werden.</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ paddingBottom: 90 }}>
+        <div className="card membership-card">
+          <div className="eyebrow">Mitgliedschaft</div>
+          <h2>HELP-ME Membership · 4,99 € pro Monat</h2>
+          <p>Für Menschen, die HELP-ME regelmäßig nutzen möchten. Monatliche automatische Verlängerung, sichere Zahlung über Stripe und weltweite Nutzung.</p>
+          <Link className="button primary" href="/?subscribe=member">Jetzt abonnieren</Link>
         </div>
       </section>
 
