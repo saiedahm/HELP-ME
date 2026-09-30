@@ -20,9 +20,9 @@ export default function HomePage() {
             <a href="#how">So funktioniert es</a>
             <a href="#features">Funktionen</a>
             <a href="/help">Jetzt Hilfe erhalten</a>
-            <MembershipButton compact />
             <a href="#contact">Kontakt</a>
           </nav>
+          <MembershipButton compact />
         </div>
       </header>
 
