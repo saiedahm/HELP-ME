@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MembershipButton from "./components/membership-button";
+import CommercialAdvertising from "../components/commercial-advertising";
 
 const features = [
   { title: "Einfach starten", text: "Beschreibe, was du brauchst. HELP ME strukturiert den nächsten sinnvollen Schritt." },
@@ -25,6 +26,8 @@ export default function HomePage() {
           <MembershipButton compact />
         </div>
       </header>
+
+      <CommercialAdvertising />
 
       <section id="top" className="hero">
         <div className="container">
