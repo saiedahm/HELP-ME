@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { getPlan } from "@/lib/billing/plans";
 
 export const runtime = "nodejs";
@@ -19,6 +20,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Free plan does not require checkout" }, { status: 400 });
     }
 
+    const session = await auth();
+    const customerEmail = session?.user?.email || "";
     const coreUrl = (process.env.PAYMENT_CORE_URL || "https://www.nexoraonline.de").replace(/\/$/, "");
     const coreSecret = process.env.PAYMENT_CORE_SECRET?.trim();
 
@@ -36,6 +39,7 @@ export async function POST(request: Request) {
         platform: "help-me",
         product: plan.id,
         interval,
+        customerEmail,
       }),
       cache: "no-store",
     });
