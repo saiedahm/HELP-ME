@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { getPlan } from "@/lib/billing/plans";
-import { requireStripe } from "@/lib/billing/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const planId = typeof body?.plan === "string" ? body.plan : "";
     const interval = body?.interval === "year" ? "year" : "month";
     const plan = getPlan(planId as Parameters<typeof getPlan>[0]);
@@ -20,29 +19,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Free plan does not require checkout" }, { status: 400 });
     }
 
-    const stripe = requireStripe();
-    const origin = request.headers.get("origin") || process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const price = interval === "year" ? plan.yearlyPriceCents : plan.monthlyPriceCents;
+    const coreUrl = (process.env.PAYMENT_CORE_URL || "https://www.nexoraonline.de").replace(/\/$/, "");
+    const coreSecret = process.env.PAYMENT_CORE_SECRET?.trim();
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [{
-        price_data: {
-          currency: "eur",
-          product_data: { name: `HELP-ME ${plan.name}` },
-          unit_amount: price,
-          recurring: { interval: interval === "year" ? "year" : "month" },
-        },
-        quantity: 1,
-      }],
-      success_url: `${origin}/?checkout=success`,
-      cancel_url: `${origin}/?checkout=cancelled`,
-      allow_promotion_codes: true,
+    if (!coreSecret) {
+      return NextResponse.json({ error: "Central payment service is not configured." }, { status: 503 });
+    }
+
+    const response = await fetch(`${coreUrl}/api/payments/core/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${coreSecret}`,
+      },
+      body: JSON.stringify({
+        platform: "help-me",
+        product: plan.id,
+        interval,
+      }),
+      cache: "no-store",
     });
 
-    return NextResponse.json({ url: session.url });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data?.url) {
+      console.error("Central HELP-ME checkout error:", data?.error || response.status);
+      return NextResponse.json(
+        { error: data?.error || "Unable to create checkout session" },
+        { status: response.status >= 500 ? 503 : response.status },
+      );
+    }
+
+    return NextResponse.json({ url: data.url });
   } catch (error) {
-    console.error("HELP-ME Stripe checkout error:", error);
-    return NextResponse.json({ error: "Unable to create checkout session" }, { status: 503 });
+    console.error("HELP-ME central checkout error:", error);
+    return NextResponse.json({ error: "Unable to connect to the central payment service." }, { status: 503 });
   }
 }
