@@ -1,9 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function MembershipButton() {
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    if (params.get("payment") !== "success" || !sessionId) return;
+
+    fetch("/api/billing/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    }).then(async (response) => {
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.paid) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }).catch(() => undefined);
+  }, []);
 
   async function subscribe() {
     if (loading) return;
