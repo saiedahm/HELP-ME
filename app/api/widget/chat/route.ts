@@ -21,6 +21,11 @@ export async function POST(request: Request) {
     if (subscription && subscription.status !== "ACTIVE") return NextResponse.json({ error: "This chatbot is temporarily unavailable." }, { status: 403 });
     const usageState = await getUsageState(prisma, chatbot.organizationId, plan);
     if (!usageState.allowed) return NextResponse.json({ error: "Monthly message limit reached. Please upgrade your plan." }, { status: 429 });
+    const reserved = await prisma.usage.updateMany({
+      where: { organizationId: chatbot.organizationId, periodStart: usageState.usage.periodStart, messages: { lt: usageState.limit } },
+      data: { messages: { increment: 1 } },
+    });
+    if (reserved.count !== 1) return NextResponse.json({ error: "Monthly message limit reached. Please upgrade your plan." }, { status: 429 });
 
     let conversation = conversationId ? await prisma.conversation.findFirst({ where: { id: conversationId, chatbotId: chatbot.id, organizationId: chatbot.organizationId } }) : null;
     if (!conversation) conversation = await prisma.conversation.create({ data: { organizationId: chatbot.organizationId, chatbotId: chatbot.id, visitorId, title: message.slice(0, 80) } });
