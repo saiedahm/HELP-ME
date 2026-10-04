@@ -41,7 +41,7 @@ export default async function DashboardPage() {
       <section className="dashboard-grid">
         <article className="dashboard-card">
           <div className="section-heading"><div><span className="badge">Your bots</span><h2>Chatbots</h2></div></div>
-          {organization.chatbots.length === 0 ? <p className="muted">No chatbot yet. Create your first one below.</p> : <div className="bot-list">{organization.chatbots.map((bot) => <div className="bot-row" key={bot.id}><span className="bot-dot" style={{ background: bot.primaryColor ?? "#39d9ff" }} /><div><strong>{bot.name}</strong><small>{bot.status} · {bot.publicKey}</small></div></div>)}</div>}
+          {organization.chatbots.length === 0 ? <p className="muted">No chatbot yet. Create your first one below.</p> : <div className="bot-list">{organization.chatbots.map((bot) => <Link className="bot-row" href={`/dashboard/chatbots/${bot.id}`} key={bot.id}><span className="bot-dot" style={{ background: bot.primaryColor ?? "#39d9ff" }} /><div><strong>{bot.name}</strong><small>{bot.status} · Open editor</small></div></Link>)}</div>}
         </article>
         <article className="dashboard-card"><span className="badge">Create</span><h2>New chatbot</h2><p className="muted">Set the basic identity now. Knowledge, design controls and embedding come next.</p><NewChatbotForm /></article>
       </section>
