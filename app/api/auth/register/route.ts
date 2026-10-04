@@ -63,7 +63,7 @@ export async function POST(request: Request) {
           },
           subscription: {
             create: {
-              plan: "FREE",
+              plan: "STARTER",
               status: "ACTIVE",
             },
           },
