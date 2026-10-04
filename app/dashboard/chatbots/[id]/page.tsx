@@ -24,7 +24,7 @@ export default async function ChatbotPage({ params }: { params: Promise<{ id: st
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div><div className="badge">HELP-ME · Chatbot Editor</div><h1>{chatbot.name}</h1><p>Customize the identity and behavior shown to your website visitors.</p></div>
-        <Link className="button" href="/dashboard">Dashboard</Link>
+        <div className="actions"><Link className="button primary" href={`/dashboard/chatbots/${chatbot.id}/chat`}>Test AI</Link><Link className="button" href="/dashboard">Dashboard</Link></div>
       </header>
       <ChatbotEditor chatbot={chatbot} />
     </main>
