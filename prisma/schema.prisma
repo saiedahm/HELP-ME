@@ -70,6 +70,7 @@ model User {
   privacyConsentAt DateTime?
   privacyConsentVersion String?
   status       UserStatus         @default(ACTIVE)
+  isPlatformAdmin Boolean          @default(false)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   memberships  OrganizationMember[]
@@ -159,6 +160,8 @@ model Conversation {
   organizationId String
   chatbotId      String
   visitorId      String?
+  visitorName    String?
+  visitorEmail   String?
   title          String?
   status         ConversationStatus @default(OPEN)
   handoffRequestedAt DateTime?
