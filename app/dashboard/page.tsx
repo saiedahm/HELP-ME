@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div><div className="badge">HELP-ME · Company Dashboard</div><h1>{organization.name}</h1><p>{session.user.email} · {membership.role}</p></div>
-        <Link className="button" href="/">Home</Link>
+        <div className="actions"><Link className="button" href="/dashboard/knowledge">Knowledge Base</Link><Link className="button" href="/">Home</Link></div>
       </header>
       <section className="stats">
         <article className="stat"><span>Chatbots</span><strong>{organization.chatbots.length}</strong></article>
