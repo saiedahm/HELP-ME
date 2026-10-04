@@ -49,6 +49,13 @@ enum MessageRole {
   SYSTEM
 }
 
+enum KnowledgeType {
+  TEXT
+  FAQ
+  WEBSITE
+  FILE
+}
+
 model User {
   id           String             @id @default(cuid())
   email        String             @unique
@@ -117,7 +124,7 @@ model KnowledgeItem {
   organizationId String
   chatbotId      String?
   title          String
-  type           String
+  type           KnowledgeType @default(TEXT)
   content        String
   sourceUrl      String?
   createdAt      DateTime     @default(now())
