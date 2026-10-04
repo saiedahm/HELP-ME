@@ -13,6 +13,18 @@ enum UserStatus {
   DELETED
 }
 
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 enum PlanCode {
   FREE
   PRO
@@ -25,57 +37,142 @@ enum SubscriptionStatus {
   INCOMPLETE
 }
 
+enum ChatbotStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
 model User {
-  id           String         @id @default(cuid())
-  email        String         @unique
+  id           String             @id @default(cuid())
+  email        String             @unique
   name         String?
-  status       UserStatus     @default(ACTIVE)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  subscription Subscription?
+  status       UserStatus         @default(ACTIVE)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  memberships  OrganizationMember[]
+}
+
+model Organization {
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  status        OrganizationStatus @default(ACTIVE)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  members       OrganizationMember[]
+  chatbots      Chatbot[]
+  subscription  Subscription?
+  usage         Usage?
+  knowledgeItems KnowledgeItem[]
   conversations Conversation[]
-  usage        Usage?
+
+  @@index([status])
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  role           MemberRole   @default(MEMBER)
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Chatbot {
+  id             String         @id @default(cuid())
+  publicKey      String         @unique @default(cuid())
+  organizationId String
+  name           String
+  slug           String
+  status         ChatbotStatus  @default(ACTIVE)
+  welcomeMessage String?
+  primaryColor   String?
+  logoUrl        String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  knowledgeItems KnowledgeItem[]
+  conversations  Conversation[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+}
+
+model KnowledgeItem {
+  id             String       @id @default(cuid())
+  organizationId String
+  chatbotId      String?
+  title          String
+  type           String
+  content        String
+  sourceUrl      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  chatbot        Chatbot?     @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([chatbotId, createdAt])
 }
 
 model Subscription {
   id                   String             @id @default(cuid())
-  userId               String             @unique
+  organizationId       String             @unique
   plan                 PlanCode           @default(FREE)
   status               SubscriptionStatus @default(ACTIVE)
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
-  id        String    @id @default(cuid())
-  userId    String
-  title     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  @@index([userId, updatedAt])
+  id             String       @id @default(cuid())
+  organizationId String
+  chatbotId      String
+  visitorId      String?
+  title          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  chatbot        Chatbot      @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  messages       Message[]
+
+  @@index([organizationId, updatedAt])
+  @@index([chatbotId, updatedAt])
+  @@index([visitorId])
 }
 
 model Message {
   id             String       @id @default(cuid())
   conversationId String
-  role           String
+  role           MessageRole
   content        String
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
   @@index([conversationId, createdAt])
 }
 
 model Usage {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  periodStart DateTime
-  messages    Int      @default(0)
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  periodStart    DateTime
+  messages       Int          @default(0)
+  conversations  Int          @default(0)
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   @@index([periodStart])
 }
