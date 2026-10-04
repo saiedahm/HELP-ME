@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { mockAI } from "@/lib/ai/mock";
+import { getUsageState } from "@/lib/usage/limits";
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,12 @@ export async function POST(request: Request) {
 
     const chatbot = await prisma.chatbot.findFirst({ where: { publicKey, status: "ACTIVE" }, include: { knowledgeItems: { orderBy: { updatedAt: "desc" }, take: 30 } } });
     if (!chatbot) return NextResponse.json({ error: "Chatbot unavailable." }, { status: 404 });
+
+    const subscription = await prisma.subscription.findUnique({ where: { organizationId: chatbot.organizationId }, select: { plan: true, status: true } });
+    const plan = subscription?.plan ?? "STARTER";
+    if (subscription && subscription.status !== "ACTIVE") return NextResponse.json({ error: "This chatbot is temporarily unavailable." }, { status: 403 });
+    const usageState = await getUsageState(prisma, chatbot.organizationId, plan);
+    if (!usageState.allowed) return NextResponse.json({ error: "Monthly message limit reached. Please upgrade your plan." }, { status: 429 });
 
     let conversation = conversationId ? await prisma.conversation.findFirst({ where: { id: conversationId, chatbotId: chatbot.id, organizationId: chatbot.organizationId } }) : null;
     if (!conversation) conversation = await prisma.conversation.create({ data: { organizationId: chatbot.organizationId, chatbotId: chatbot.id, visitorId, title: message.slice(0, 80) } });
