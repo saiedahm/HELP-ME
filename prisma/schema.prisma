@@ -26,7 +26,8 @@ enum MemberRole {
 }
 
 enum PlanCode {
-  FREE
+  STARTER
+  BUSINESS
   PRO
 }
 
