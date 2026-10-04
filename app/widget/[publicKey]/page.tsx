@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function WidgetPage({ params }: { params: { publicKey: string } }) {
   const [messages, setMessages] = useState<{ role: "USER" | "ASSISTANT"; content: string }[]>([]);
@@ -8,6 +8,8 @@ export default function WidgetPage({ params }: { params: { publicKey: string } }
   const [conversationId, setConversationId] = useState("");
   const [loading, setLoading] = useState(false);
   const [handoff, setHandoff] = useState(false);
+  const [bot, setBot] = useState<{name:string;welcomeMessage:string|null;primaryColor:string|null;logoUrl:string|null}>({name:"HELP-ME Assistant",welcomeMessage:"{bot.welcomeMessage || "Hello! How can I help you today?"}",primaryColor:"#39d9ff",logoUrl:null});
+  useEffect(()=>{fetch(`/api/widget/config?bot=${encodeURIComponent(params.publicKey)}`).then(r=>r.ok?r.json():null).then(d=>{if(d?.chatbot)setBot(d.chatbot)}).catch(()=>{});},[params.publicKey]);
 
   async function send() {
     const message = input.trim();
@@ -31,15 +33,15 @@ export default function WidgetPage({ params }: { params: { publicKey: string } }
   return (
     <div style={{ height: "100vh", background: "transparent", fontFamily: "Inter,system-ui,sans-serif" }}>
       <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 18, background: "#0b1422", color: "#f5f8fc", border: "1px solid rgba(255,255,255,.1)" }}>
-        <div style={{ padding: "14px 16px", fontWeight: 800, borderBottom: "1px solid rgba(255,255,255,.1)" }}>HELP-ME Assistant <button onClick={requestHuman} disabled={!conversationId || handoff} style={{ float:"right", border:0, background:"transparent", color:"#39d9ff", cursor:"pointer", fontSize:12 }}>{handoff ? "Human requested" : "Talk to a human"}</button></div>
+        <div style={{ padding: "14px 16px", fontWeight: 800, borderBottom: "1px solid rgba(255,255,255,.1)", display:"flex", alignItems:"center", gap:10 }}><div style={{width:30,height:30,borderRadius:9,overflow:"hidden",background:bot.primaryColor||"#39d9ff",display:"grid",placeItems:"center",color:"#031018",fontWeight:900}}>{bot.logoUrl?<img src={bot.logoUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:"H"}</div><div style={{flex:1}}><div>{bot.name}</div><small style={{fontWeight:500,color:"#9aa9bc"}}>Online · Your business assistant</small></div> <button onClick={requestHuman} disabled={!conversationId || handoff} style={{ border:0, background:"transparent", color:bot.primaryColor||"#39d9ff", cursor:"pointer", fontSize:12 }}>{handoff ? "Human requested" : "Talk to a human"}</button></div>
         <div style={{ flex: 1, overflow: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
           {messages.length === 0 && <div style={{ padding: 12, borderRadius: 14, background: "rgba(255,255,255,.06)" }}>Hello! How can I help you today?</div>}
-          {messages.map((m, i) => <div key={i} style={{ alignSelf: m.role === "USER" ? "flex-end" : "flex-start", maxWidth: "82%", padding: "10px 12px", borderRadius: 14, background: m.role === "USER" ? "#39d9ff" : "rgba(255,255,255,.07)", color: m.role === "USER" ? "#031018" : "#f5f8fc" }}>{m.content}</div>)}
+          {messages.map((m, i) => <div key={i} style={{ alignSelf: m.role === "USER" ? "flex-end" : "flex-start", maxWidth: "82%", padding: "10px 12px", borderRadius: 14, background: m.role === "USER" ? (bot.primaryColor||"#39d9ff") : "rgba(255,255,255,.07)", color: m.role === "USER" ? "#031018" : "#f5f8fc" }}>{m.content}</div>)}
           {loading && <div style={{ padding: 12, color: "#9aa9bc" }}>Thinking…</div>}
         </div>
         <div style={{ display: "flex", gap: 8, padding: 10, borderTop: "1px solid rgba(255,255,255,.1)" }}>
           <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Type your message…" style={{ minWidth: 0, flex: 1, padding: "11px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,.12)", background: "rgba(0,0,0,.2)", color: "#fff", outline: "none" }} />
-          <button onClick={send} disabled={loading} style={{ border: 0, borderRadius: 10, padding: "0 15px", background: "#39d9ff", color: "#031018", fontWeight: 800 }}>Send</button>
+          <button onClick={send} disabled={loading} style={{ border: 0, borderRadius: 10, padding: "0 15px", background: bot.primaryColor || "#39d9ff", color: "#031018", fontWeight: 800 }}>Send</button>
         </div>
       </div>
     </div>
