@@ -145,7 +145,7 @@ model KnowledgeItem {
 model Subscription {
   id                   String             @id @default(cuid())
   organizationId       String             @unique
-  plan                 PlanCode           @default(FREE)
+  plan                 PlanCode           @default(STARTER)
   status               SubscriptionStatus @default(ACTIVE)
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
