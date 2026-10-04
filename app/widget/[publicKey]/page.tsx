@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-export default function WidgetPage({ params }: { params: { publicKey: string } }) {
+export default function WidgetPage({ params }: { params: Promise<{ publicKey: string }> }) {
+  const [publicKey, setPublicKey] = useState("");
   const [messages, setMessages] = useState<{ role: "USER" | "ASSISTANT"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState("");
   const [loading, setLoading] = useState(false);
   const [handoff, setHandoff] = useState(false);
   const [bot, setBot] = useState<{name:string;welcomeMessage:string|null;primaryColor:string|null;logoUrl:string|null}>({name:"HELP-ME Assistant",welcomeMessage:"Hello! How can I help you today?",primaryColor:"#39d9ff",logoUrl:null});
-  useEffect(()=>{fetch(`/api/widget/config?bot=${encodeURIComponent(params.publicKey)}`).then(r=>r.ok?r.json():null).then(d=>{if(d?.chatbot)setBot(d.chatbot)}).catch(()=>{});},[params.publicKey]);
+  useEffect(() => { let active = true; params.then(({ publicKey: key }) => { if (active) setPublicKey(key); }); return () => { active = false; }; }, [params]);
+  useEffect(()=>{ if (!publicKey) return; fetch(`/api/widget/config?bot=${encodeURIComponent(publicKey)}`).then(r=>r.ok?r.json():null).then(d=>{if(d?.chatbot)setBot(d.chatbot)}).catch(()=>{}); },[publicKey]);
 
   async function send() {
     const message = input.trim();
@@ -17,7 +19,7 @@ export default function WidgetPage({ params }: { params: { publicKey: string } }
     setInput("");
     setMessages((items) => [...items, { role: "USER", content: message }]);
     setLoading(true);
-    const response = await fetch("/api/widget/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicKey: params.publicKey, conversationId: conversationId || undefined, message }) });
+    const response = await fetch("/api/widget/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicKey, conversationId: conversationId || undefined, message }) });
     const data = await response.json();
     setMessages((items) => [...items, { role: "ASSISTANT", content: response.ok ? data.reply : (data.error ?? "Sorry, something went wrong.") }]);
     if (response.ok) setConversationId(data.conversationId);
@@ -26,7 +28,7 @@ export default function WidgetPage({ params }: { params: { publicKey: string } }
 
   async function requestHuman() {
     if (!conversationId || handoff) return;
-    const response = await fetch("/api/widget/handoff", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicKey: params.publicKey, conversationId }) });
+    const response = await fetch("/api/widget/handoff", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicKey, conversationId }) });
     if (response.ok) setHandoff(true);
   }
 
