@@ -1,26 +1,30 @@
 {
   "name": "help-me",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "HELP ME - Tell me what you need. I'll help you get it done.",
+  "description": "HELP-ME — a secure SaaS platform for intelligent assistance.",
   "packageManager": "pnpm@10.15.0",
-  "engines": {
-    "node": ">=20.0.0"
-  },
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
-    "install:all": "pnpm install",
-    "dev": "pnpm --parallel --filter './apps/*' --filter './backend/*' dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
-    "format": "pnpm -r format",
-    "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
-    "test:unit": "pnpm -r test:unit",
-    "test:integration": "pnpm -r test:integration",
-    "test:e2e": "pnpm -r test:e2e",
-    "test:security": "pnpm -r test:security",
-    "db:migrate": "pnpm --filter @help-me/backend db:migrate",
-    "db:seed": "pnpm --filter @help-me/backend db:seed",
-    "db:reset": "pnpm --filter @help-me/backend db:reset"
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate"
+  },
+  "dependencies": {
+    "@prisma/client": "6.16.2",
+    "next": "15.5.3",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.0",
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "prisma": "6.16.2",
+    "typescript": "5.9.2"
   }
-} 
+}
