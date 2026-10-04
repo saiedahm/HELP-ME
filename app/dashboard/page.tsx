@@ -22,7 +22,7 @@ export default async function DashboardPage() {
   });
 
   if (!membership) {
-    return <main className="page"><section className="panel"><h1>Workspace not found</h1><p>No company workspace is attached to this account.</p><Link className="button" href="/">Back to home</Link></section></main>;
+    return <main className="page"><section className="panel"><h1>Workspace not found</h1><p>No company workspace is attached to this account.</p><div className="actions"><Link className="button" href="/dashboard/usage">Usage</Link><Link className="button" href="/dashboard/conversations">Conversations</Link><Link className="button" href="/dashboard/billing">Billing</Link><Link className="button" href="/">Back to home</Link></div></section></main>;
   }
 
   const { organization } = membership;
