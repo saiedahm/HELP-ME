@@ -56,6 +56,12 @@ enum KnowledgeType {
   FILE
 }
 
+enum ConversationStatus {
+  OPEN
+  HANDED_OFF
+  CLOSED
+}
+
 model User {
   id           String             @id @default(cuid())
   email        String             @unique
@@ -154,6 +160,7 @@ model Conversation {
   chatbotId      String
   visitorId      String?
   title          String?
+  status         ConversationStatus @default(OPEN)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
