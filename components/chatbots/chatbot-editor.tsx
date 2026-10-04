@@ -77,8 +77,8 @@ export default function ChatbotEditor({ chatbot }: { chatbot: Chatbot }) {
         <span className="badge">Website integration</span>
         <h2>Embed your assistant</h2>
         <p className="muted">Add this small script to your website. Your secret AI credentials never go into the browser.</p>
-        <pre className="embed-code">{`<script src="/widget.js" data-bot="${chatbot.publicKey}"></script>`}</pre>
-        <button className="button" type="button" onClick={() => navigator.clipboard.writeText(`<script src="/widget.js" data-bot="${chatbot.publicKey}"></script>`)}>Copy embed code</button>
+        <pre className="embed-code">{`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/widget.js" data-bot="${chatbot.publicKey}"></script>`}</pre>
+        <button className="button" type="button" onClick={() => navigator.clipboard.writeText(`<script src="${window.location.origin}/widget.js" data-bot="${chatbot.publicKey}"></script>`)}>Copy embed code</button>
       </section>
     </div>
   );
