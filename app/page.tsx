@@ -1,55 +1,26 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import LanguageSwitcher, { type SiteLanguage } from "@/components/language-switcher";
 
-const features = [
-  ["Knowledge that belongs to your business", "Add FAQs, company information, website content and files so each assistant answers from your own knowledge."],
-  ["A chatbot built for your website", "Customize the identity, colors and welcome experience, then place the assistant on your website."],
-  ["Conversations that become insight", "Keep conversations organized and prepare your team for leads, analytics and human handoff."],
-];
+const copy = {
+  en:{platform:"Platform",pricing:"Pricing",signIn:"Sign in",start:"Start free",eyebrow:"HELP-ME BUSINESS · AI CUSTOMER ASSISTANTS",titleA:"Your business,",titleB:"always ready",titleC:"to answer.",intro:"Create a smart website assistant trained on your company knowledge. Turn questions into conversations, leads and better customer service.",create:"Create your assistant",explore:"Explore plans",proof:["No AI key in the browser","Company data isolation","Start with free Mock AI"],assistant:"HELP-ME Assistant",online:"Online · Your business knowledge",hello:"Hello! 👋 How can I help you today?",question:"I have a question about your services.",answer:"Absolutely. I can answer using your company information.",input:"Type your message…",featureEyebrow:"ONE BUSINESS · ONE KNOWLEDGE · ONE ASSISTANT",featureTitle:"Everything your website assistant needs.",features:[["Knowledge that belongs to your business","Add FAQs, company information, website content and files so each assistant answers from your own knowledge."],["A chatbot built for your website","Customize the identity, colors and welcome experience, then place the assistant on your website."],["Conversations that become insight","Keep conversations organized and prepare your team for leads, analytics and human handoff."]],planEyebrow:"SIMPLE MONTHLY PLANS",planTitle:"Choose the scale that fits your business.",planIntro:"Clear plans designed for companies of different sizes.",plans:[["Starter","19€","For a first website assistant.",["1 website","1 chatbot","Basic customization","1,000 messages / month"]],["Business","49€","For growing companies.",["Multiple knowledge sources","Conversation history","Usage statistics","5,000 messages / month"]],["Pro","99€","For teams that need more.",["Higher usage limits","Advanced customization","Priority features","20,000 messages / month"]]],popular:"MOST POPULAR",choose:"Choose",ctaEyebrow:"READY WHEN YOU ARE",cta:"Give your website an assistant worth talking to.",build:"Build your first chatbot",privacy:"Privacy"},
+  de:{platform:"Plattform",pricing:"Preise",signIn:"Anmelden",start:"Kostenlos starten",eyebrow:"HELP-ME BUSINESS · KI-KUNDENASSISTENTEN",titleA:"Ihr Unternehmen,",titleB:"immer bereit",titleC:"zu antworten.",intro:"Erstellen Sie einen intelligenten Website-Assistenten auf Basis Ihres Unternehmenswissens. Aus Fragen werden Gespräche, Leads und besserer Kundenservice.",create:"Assistent erstellen",explore:"Preise ansehen",proof:["Kein KI-Schlüssel im Browser","Trennung der Unternehmensdaten","Kostenlos mit Mock AI starten"],assistant:"HELP-ME Assistent",online:"Online · Ihr Unternehmenswissen",hello:"Hallo! 👋 Wie kann ich Ihnen helfen?",question:"Ich habe eine Frage zu Ihren Leistungen.",answer:"Gerne. Ich kann anhand Ihrer Unternehmensinformationen antworten.",input:"Nachricht eingeben…",featureEyebrow:"EIN UNTERNEHMEN · EIN WISSEN · EIN ASSISTENT",featureTitle:"Alles für Ihren Website-Assistenten.",features:[["Wissen Ihres Unternehmens","Fügen Sie FAQs, Unternehmensinformationen, Website-Inhalte und Dateien hinzu."],["Chatbot für Ihre Website","Passen Sie Identität, Farben und Begrüßung an und integrieren Sie den Assistenten."],["Gespräche werden zu Erkenntnissen","Verwalten Sie Gespräche und bereiten Sie Ihr Team auf Leads und persönliche Übergabe vor."]],planEyebrow:"EINFACHE MONATLICHE TARIFE",planTitle:"Die passende Größe für Ihr Unternehmen.",planIntro:"Klare Tarife für Unternehmen unterschiedlicher Größe.",plans:[["Starter","19€","Für den ersten Website-Assistenten.",["1 Website","1 Chatbot","Basis-Anpassung","1.000 Nachrichten / Monat"]],["Business","49€","Für wachsende Unternehmen.",["Mehrere Wissensquellen","Gesprächsverlauf","Nutzungsstatistik","5.000 Nachrichten / Monat"]],["Pro","99€","Für Teams mit höheren Anforderungen.",["Höhere Limits","Erweiterte Anpassung","Priorisierte Funktionen","20.000 Nachrichten / Monat"]]],popular:"AM BELIEBTESTEN",choose:"Auswählen",ctaEyebrow:"BEREIT?",cta:"Geben Sie Ihrer Website einen Assistenten, mit dem man gerne spricht.",build:"Ersten Chatbot erstellen",privacy:"Datenschutz"},
+  ar:{platform:"المنصة",pricing:"الأسعار",signIn:"تسجيل الدخول",start:"ابدأ مجانًا",eyebrow:"HELP-ME BUSINESS · مساعدين أذكياء للشركات",titleA:"شركتك،",titleB:"جاهزة دائمًا",titleC:"للإجابة.",intro:"أنشئ مساعدًا ذكيًا لموقعك يعتمد على معرفة شركتك، وحوّل الأسئلة إلى محادثات وعملاء محتملين وخدمة أفضل.",create:"أنشئ مساعدك",explore:"استكشف الباقات",proof:["لا توجد مفاتيح AI في المتصفح","عزل بيانات كل شركة","ابدأ مجانًا مع Mock AI"],assistant:"مساعد HELP-ME",online:"متصل · معرفة شركتك",hello:"مرحبًا! 👋 كيف يمكنني مساعدتك؟",question:"لدي سؤال عن خدماتكم.",answer:"بالتأكيد. يمكنني الإجابة باستخدام معلومات شركتك.",input:"اكتب رسالتك…",featureEyebrow:"شركة واحدة · معرفة واحدة · مساعد واحد",featureTitle:"كل ما يحتاجه مساعد موقعك.",features:[["معرفة خاصة بشركتك","أضف الأسئلة الشائعة ومعلومات الشركة ومحتوى الموقع والملفات ليجيب المساعد من معرفتك."],["مساعد مصمم لموقعك","خصص الهوية والألوان ورسالة الترحيب ثم ضع المساعد في موقعك."],["المحادثات تتحول إلى فرص","نظم المحادثات واجعل فريقك مستعدًا للعملاء المحتملين والتحويل لموظف."]],planEyebrow:"باقات شهرية بسيطة",planTitle:"اختر الحجم المناسب لشركتك.",planIntro:"باقات واضحة مصممة للشركات بمختلف أحجامها.",plans:[["Starter","19€","لأول مساعد على موقعك.",["موقع واحد","مساعد واحد","تخصيص أساسي","1,000 رسالة / شهر"]],["Business","49€","للشركات النامية.",["مصادر معرفة متعددة","سجل المحادثات","إحصاءات الاستخدام","5,000 رسالة / شهر"]],["Pro","99€","للفرق التي تحتاج أكثر.",["حدود استخدام أعلى","تخصيص متقدم","مزايا أولوية","20,000 رسالة / شهر"]]],popular:"الأكثر طلبًا",choose:"اختر",ctaEyebrow:"جاهز عندما تكون جاهزًا",cta:"امنح موقعك مساعدًا يستحق التحدث معه.",build:"أنشئ أول Chatbot",privacy:"الخصوصية"}
+} as const;
 
-const plans = [
-  { name: "Starter", price: "19€", description: "For a first website assistant.", features: ["1 website", "1 chatbot", "Basic customization", "1,000 messages / month"], featured: false },
-  { name: "Business", price: "49€", description: "For growing companies.", features: ["Multiple knowledge sources", "Conversation history", "Usage statistics", "5,000 messages / month"], featured: true },
-  { name: "Pro", price: "99€", description: "For teams that need more.", features: ["Higher usage limits", "Advanced customization", "Priority features", "20,000 messages / month"], featured: false },
-];
-
-export default function HomePage() {
-  return (
-    <main className="site-shell">
-      <nav className="site-nav">
-        <Link className="brand" href="/"><span>H</span> HELP-ME<span className="brand-dot">.</span></Link>
-        <div className="nav-links"><Link href="#features">Platform</Link><Link href="#pricing">Pricing</Link><Link href="/login">Sign in</Link><Link className="nav-cta" href="/register">Start free</Link></div>
-      </nav>
-
-      <section className="landing-hero">
-        <div className="hero-copy">
-          <div className="eyebrow">HELP-ME BUSINESS · AI CUSTOMER ASSISTANTS</div>
-          <h1>Your business, <span>always ready</span> to answer.</h1>
-          <p>Create a smart website assistant trained on your company knowledge. Turn questions into conversations, leads and better customer service.</p>
-          <div className="actions"><Link className="button primary" href="/register">Create your assistant</Link><Link className="button" href="#pricing">Explore plans</Link></div>
-          <div className="hero-proof"><span>✓ No AI key in the browser</span><span>✓ Company data isolation</span><span>✓ Start with free Mock AI</span></div>
-        </div>
-        <div className="hero-visual">
-          <div className="glow-orb" />
-          <div className="assistant-window">
-            <div className="assistant-top"><div className="assistant-logo">H</div><div><strong>HELP-ME Assistant</strong><small>Online · Your business knowledge</small></div><i /></div>
-            <div className="assistant-body"><div className="bubble">Hello! 👋 How can I help you today?</div><div className="bubble visitor">I have a question about your services.</div><div className="bubble">Absolutely. I can answer using your company information.</div></div>
-            <div className="assistant-input">Type your message… <b>→</b></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="features" className="landing-section">
-        <div className="section-intro"><div className="eyebrow">ONE BUSINESS · ONE KNOWLEDGE · ONE ASSISTANT</div><h2>Everything your website assistant needs.</h2></div>
-        <div className="feature-grid">{features.map(([title,text],i)=><article className="feature-card" key={title}><div className="feature-number">0{i+1}</div><h3>{title}</h3><p>{text}</p></article>)}</div>
-      </section>
-
-      <section id="pricing" className="landing-section pricing-section">
-        <div className="section-intro center"><div className="eyebrow">SIMPLE MONTHLY PLANS</div><h2>Choose the scale that fits your business.</h2><p>Transparent limits now. Stripe billing and automated plan enforcement will be connected in the billing stage.</p></div>
-        <div className="pricing-grid">{plans.map((plan)=><article className={`price-card ${plan.featured ? "featured" : ""}`} key={plan.name}>{plan.featured && <div className="popular">MOST POPULAR</div>}<div className="plan-name">{plan.name}</div><div className="price">{plan.price}<small>/ month</small></div><p>{plan.description}</p><ul>{plan.features.map((feature)=><li key={feature}>✓ {feature}</li>)}</ul><Link className={`button ${plan.featured ? "primary" : ""}`} href="/register">Choose {plan.name}</Link></article>)}</div>
-      </section>
-
-      <section className="final-cta"><div><div className="eyebrow">READY WHEN YOU ARE</div><h2>Give your website an assistant worth talking to.</h2></div><Link className="button primary" href="/register">Build your first chatbot</Link></section>
-      <footer className="site-footer"><span>© {new Date().getFullYear()} HELP-ME Business</span><div><Link href="/privacy">Privacy</Link><Link href="/login">Sign in</Link></div></footer>
-    </main>
-  );
+export default function HomePage(){
+ const [lang,setLang]=useState<SiteLanguage>("en");
+ useEffect(()=>{const saved=localStorage.getItem("help-me-language") as SiteLanguage|null;const v=saved??"en";setLang(v);document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"},[]);
+ function changeLanguage(v:SiteLanguage){setLang(v);localStorage.setItem("help-me-language",v);document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"}
+ const t=copy[lang];
+ return <main className="site-shell">
+  <nav className="site-nav"><Link className="brand" href="/"><span className="brand-mark">H</span><span>HELP-ME</span><span className="brand-dot">.</span></Link><div className="nav-links"><Link href="#features">{t.platform}</Link><Link href="#pricing">{t.pricing}</Link><LanguageSwitcher value={lang} onChange={changeLanguage}/><Link href="/login">{t.signIn}</Link><Link className="nav-cta" href="/register">{t.start}</Link></div></nav>
+  <section className="landing-hero"><div className="hero-copy"><div className="eyebrow">{t.eyebrow}</div><h1>{t.titleA} <span>{t.titleB}</span> {t.titleC}</h1><p>{t.intro}</p><div className="actions"><Link className="button primary" href="/register">{t.create}</Link><Link className="button" href="#pricing">{t.explore}</Link></div><div className="hero-proof">{t.proof.map(x=><span key={x}>✓ {x}</span>)}</div></div><div className="hero-visual"><div className="glow-orb"/><div className="assistant-window"><div className="assistant-top"><div className="assistant-logo"><span>H</span></div><div><strong>{t.assistant}</strong><small>{t.online}</small></div><i/></div><div className="assistant-body"><div className="bubble">{t.hello}</div><div className="bubble visitor">{t.question}</div><div className="bubble">{t.answer}</div></div><div className="assistant-input">{t.input}<b>→</b></div></div></div></section>
+  <section id="features" className="landing-section"><div className="section-intro"><div className="eyebrow">{t.featureEyebrow}</div><h2>{t.featureTitle}</h2></div><div className="feature-grid">{t.features.map(([title,text],i)=><article className="feature-card" key={title}><div className="feature-number">0{i+1}</div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+  <section id="pricing" className="landing-section pricing-section"><div className="section-intro center"><div className="eyebrow">{t.planEyebrow}</div><h2>{t.planTitle}</h2><p>{t.planIntro}</p></div><div className="pricing-grid">{t.plans.map(([name,price,desc,features],i)=><article className={`price-card ${i===1?"featured":""}`} key={name}>{i===1&&<div className="popular">{t.popular}</div>}<div className="plan-name">{name}</div><div className="price">{price}<small>/ month</small></div><p>{desc}</p><ul>{features.map(f=><li key={f}>✓ {f}</li>)}</ul><Link className={`button ${i===1?"primary":""}`} href="/register">{t.choose} {name}</Link></article>)}</div></section>
+  <section className="final-cta"><div><div className="eyebrow">{t.ctaEyebrow}</div><h2>{t.cta}</h2></div><Link className="button primary" href="/register">{t.build}</Link></section>
+  <footer className="site-footer"><span>© {new Date().getFullYear()} HELP-ME Business</span><div><Link href="/privacy">{t.privacy}</Link><Link href="/login">{t.signIn}</Link></div></footer>
+ </main>
 }
