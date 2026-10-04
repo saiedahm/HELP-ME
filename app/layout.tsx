@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HELP-ME",
-  description: "Smart assistance when you need help.",
+  title: "HELP-ME Business — AI Customer Assistants",
+  description: "Create smart AI customer assistants for your business website.",
 };
 
 export default function RootLayout({
