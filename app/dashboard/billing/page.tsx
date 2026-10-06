@@ -9,10 +9,12 @@ const plans = [
 ];
 
 type BillingStatus = {
-  plan?: string;
-  status?: string;
-  hasCustomer?: boolean;
-  hasSubscription?: boolean;
+  subscription?: {
+    plan?: string;
+    status?: string;
+    hasStripeCustomer?: boolean;
+    hasStripeSubscription?: boolean;
+  };
 };
 
 export default function BillingPage() {
@@ -46,13 +48,16 @@ export default function BillingPage() {
     if (data.url) window.location.href = data.url;
   }
 
+  const subscription = status?.subscription;
+  const currentPlan = subscription?.plan ?? "STARTER";
+
   return <main className="dashboard-page">
     <header className="dashboard-header">
       <div><div className="badge">HELP-ME · Billing</div><h1>Plans & billing</h1><p>Subscriptions are activated from verified Stripe events.</p></div>
-      <div className="actions"><Link className="button" href="/dashboard">Dashboard</Link>{status?.hasCustomer && <button className="button" disabled={!!loading} onClick={openPortal}>{loading === "portal" ? "Opening…" : "Manage billing"}</button>}</div>
+      <div className="actions"><Link className="button" href="/dashboard">Dashboard</Link>{subscription?.hasStripeCustomer && <button className="button" disabled={!!loading} onClick={openPortal}>{loading === "portal" ? "Opening…" : "Manage billing"}</button>}</div>
     </header>
-    {status && <section className="usage-panel"><div className="usage-top"><div><span>Current plan</span><strong>{status.plan ?? "STARTER"}</strong></div><div><span>Status</span><strong>{status.status ?? "ACTIVE"}</strong></div></div><p className="muted">Manage your subscription, payment method and invoices securely through Stripe.</p></section>}
-    <section className="billing-grid">{plans.map((plan) => <article className={`price-card ${status?.plan === plan.code ? "featured" : ""}`} key={plan.code}>{status?.plan === plan.code && <div className="popular">CURRENT PLAN</div>}<div className="plan-name">{plan.name}</div><div className="price">{plan.price}<small>/ month</small></div><p>{plan.text}</p><button className="button primary" disabled={!!loading || status?.plan === plan.code} onClick={() => checkout(plan.code)}>{status?.plan === plan.code ? "Current plan" : loading === plan.code ? "Opening checkout…" : "Choose " + plan.name}</button></article>)}</section>
+    {status && <section className="usage-panel"><div className="usage-top"><div><span>Current plan</span><strong>{currentPlan}</strong></div><div><span>Status</span><strong>{subscription?.status ?? "ACTIVE"}</strong></div></div><p className="muted">Manage your subscription, payment method and invoices securely through Stripe.</p></section>}
+    <section className="billing-grid">{plans.map((plan) => <article className={`price-card ${currentPlan === plan.code ? "featured" : ""}`} key={plan.code}>{currentPlan === plan.code && <div className="popular">CURRENT PLAN</div>}<div className="plan-name">{plan.name}</div><div className="price">{plan.price}<small>/ month</small></div><p>{plan.text}</p><button className="button primary" disabled={!!loading || currentPlan === plan.code} onClick={() => checkout(plan.code)}>{currentPlan === plan.code ? "Current plan" : loading === plan.code ? "Opening checkout…" : "Choose " + plan.name}</button></article>)}</section>
     {error && <p className="form-error">{error}</p>}
   </main>;
 }
