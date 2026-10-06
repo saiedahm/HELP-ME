@@ -79,7 +79,7 @@ export default function HomePage() {
 
       <footer className="footer shell">
         <span>© 2026 HELP-ME</span>
-        <span>Secure assistance for modern businesses.</span>
+        <span>Foundation build updated from main.</span>
       </footer>
     </main>
   );
