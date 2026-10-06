@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/client";
 import { mockAI } from "@/lib/ai/mock";
+import { getUsageState } from "@/lib/usage/limits";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -18,9 +19,21 @@ export async function POST(request: Request) {
 
     const membership = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id },
-      select: { organizationId: true },
+      select: {
+        organizationId: true,
+        organization: { select: { subscription: { select: { plan: true } } } },
+      },
     });
     if (!membership) return NextResponse.json({ error: "Company access denied." }, { status: 403 });
+
+    const plan = membership.organization.subscription?.plan ?? "STARTER";
+    const usageState = await getUsageState(prisma, membership.organizationId, plan);
+    if (!usageState.allowed || usageState.usage.messages + 2 > usageState.limit) {
+      return NextResponse.json(
+        { error: "Monthly message limit reached.", limit: usageState.limit, used: usageState.usage.messages },
+        { status: 429 }
+      );
+    }
 
     const chatbot = await prisma.chatbot.findFirst({
       where: { id: chatbotId, organizationId: membership.organizationId, status: "ACTIVE" },
@@ -70,10 +83,12 @@ export async function POST(request: Request) {
       data: { conversationId: conversation.id, role: "ASSISTANT", content: reply },
     });
 
-    await prisma.usage.upsert({
+    await prisma.usage.update({
       where: { organizationId: membership.organizationId },
-      create: { organizationId: membership.organizationId, periodStart: new Date(), messages: 2, conversations: conversationId ? 0 : 1 },
-      update: { messages: { increment: 2 }, conversations: conversationId ? undefined : { increment: 1 } },
+      data: {
+        messages: { increment: 2 },
+        conversations: conversationId ? undefined : { increment: 1 },
+      },
     });
 
     return NextResponse.json({ conversationId: conversation.id, reply });
