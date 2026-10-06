@@ -54,3 +54,5 @@ pnpm typecheck
 pnpm build
 pnpm start
 ```
+
+Deployment trigger: main root application verified on commit 6fcdafa.
