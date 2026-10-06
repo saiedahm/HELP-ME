@@ -55,4 +55,4 @@ pnpm build
 pnpm start
 ```
 
-Deployment trigger: main root application verified on commit 6fcdafa.
+Deployment verification trigger: latest main build must be produced from the current root application commit.
