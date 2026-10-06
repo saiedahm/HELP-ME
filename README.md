@@ -1,25 +1,40 @@
+
 # HELP-ME
 
-HELP-ME is being rebuilt as a clean SaaS platform for secure, intelligent assistance.
+HELP-ME is being developed as a clean, secure SaaS platform for intelligent assistance.
 
-Development order:
-1. Foundation and verified build
-2. Privacy consent and secure authentication
-3. User account and dashboard
-4. Mock AI provider and conversations
-5. Usage and plan limits
-6. Stripe subscriptions
-7. Multi-tenant security hardening
-8. Administration
-9. Production readiness
+## Development Order
 
-The initial AI implementation will use a free Mock AI provider. No commercial AI API is required for development.
+1. **Foundation and Verified Build**
+2. **Privacy Consent and Secure Authentication**
+3. **User Accounts and Dashboard**
+4. **AI Provider and Conversations**
+5. **Usage Tracking and Plan Limits**
+6. **Stripe Subscriptions and Billing**
+7. **Multi-Tenant Security and Data Isolation**
+8. **Administration and Management**
+9. **Production Readiness and Final Verification**
 
-Stack:
-- Next.js App Router
-- TypeScript
-- PostgreSQL
-- Prisma
-- Vercel-ready deployment
+## AI Development
 
-The new root app is the active foundation. Legacy project directories remain untouched until the foundation is verified.
+The initial development environment uses a **free Mock AI Provider** for testing and platform development.
+
+No commercial AI API is required during the initial development and verification phase.
+
+The AI layer is designed to remain independent so that a real AI provider can be connected later without rebuilding the platform architecture.
+
+## Technology Stack
+
+* **Next.js** — App Router
+* **TypeScript**
+* **PostgreSQL**
+* **Prisma ORM**
+* **NextAuth authentication**
+* **Stripe Billing**
+* **Vercel-ready deployment**
+
+## Project Structure
+
+The **root application is the active HELP-ME application and the official development foundation**.
+
+Legacy and experimental project directories rema
