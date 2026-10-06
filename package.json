@@ -4,9 +4,7 @@
   "private": true,
   "description": "HELP-ME — a secure SaaS platform for intelligent assistance.",
   "packageManager": "pnpm@10.15.0",
-  "engines": {
-    "node": ">=20.9.0"
-  },
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
