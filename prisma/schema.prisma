@@ -45,6 +45,7 @@ model Organization {
   chatbots       Chatbot[]
   knowledge      KnowledgeDocument[]
   conversations  Conversation[]
+  subscriptions  Subscription[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -117,4 +118,21 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  organizationId       String
+  stripeCustomerId     String?
+  stripeSubscriptionId String   @unique
+  plan                 String
+  status               String
+  currentPeriodEnd     DateTime?
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([stripeCustomerId])
+  @@index([status])
 }
