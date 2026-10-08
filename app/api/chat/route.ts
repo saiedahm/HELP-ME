@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { mockAI } from "@/lib/ai/mock";
+import { aiProvider } from "@/lib/ai/runtime";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     } else {
       const chatbot = await prisma.chatbot.findFirst({
         where: { organizationId: membership.organizationId, status: "ACTIVE" },
-        select: { id: true }
+        select: { id: true, name: true }
       });
       if (!chatbot) return NextResponse.json({ error: "No active assistant is configured." }, { status: 409 });
       conversation = await prisma.conversation.create({
@@ -50,12 +50,27 @@ export async function POST(request: Request) {
       take: 10
     });
     const contextItems = knowledge.map(item => item.title + ": " + item.content.slice(0, 1500));
-    const reply = await mockAI.generateReply({
-      messages: [{ role: "user", content: message }],
+    const previousMessages = await prisma.message.findMany({
+      where: { conversationId: conversation.id },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      select: { role: true, content: true }
+    });
+    const messages = previousMessages.reverse().map(item => ({
+      role: item.role === "assistant" ? "assistant" as const : "user" as const,
+      content: item.content
+    }));
+    // The newest user message has already been saved and is included in history.
+    const reply = await aiProvider.generateReply({
+      messages,
       context: { botName: "HELP-ME", knowledge: contextItems }
     });
     await prisma.message.create({ data: { conversationId: conversation.id, role: "assistant", content: reply } });
-    return NextResponse.json({ reply, provider: "mock", conversationId: conversation.id });
+    return NextResponse.json({
+      reply,
+      provider: process.env.OPENAI_API_KEY ? "openai" : "mock",
+      conversationId: conversation.id
+    });
   } catch (error) {
     console.error("Chat request failed:", error);
     return NextResponse.json({ error: "The assistant is temporarily unavailable." }, { status: 500 });
