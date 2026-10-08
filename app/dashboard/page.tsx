@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import KnowledgePanel from "./knowledge-panel";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -9,10 +10,9 @@ export default async function DashboardPage() {
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: {
-      id: true, name: true, email: true,
+      name: true, email: true,
       memberships: {
-        orderBy: { createdAt: "asc" },
-        take: 1,
+        orderBy: { createdAt: "asc" }, take: 1,
         select: {
           role: true,
           organization: {
@@ -47,10 +47,11 @@ export default async function DashboardPage() {
         </div>
         <div className="dashboard-grid">
           <article className="dashboard-card"><span>01</span><h2>AI Assistant</h2><p>Try the assistant and save messages to your workspace.</p><Link href="/chat">Open chat →</Link></article>
-          <article className="dashboard-card"><span>02</span><h2>Knowledge Base</h2><p>Knowledge-base management is the next module to activate.</p><span>Coming next</span></article>
+          <article className="dashboard-card"><span>02</span><h2>Knowledge Base</h2><p>Add FAQs and service information to guide responses.</p><a href="#knowledge-base">Manage knowledge ↓</a></article>
           <article className="dashboard-card"><span>03</span><h2>Conversations</h2><p>Your saved conversations are counted in this workspace.</p><span>{organization?._count.conversations ?? 0} saved</span></article>
-          <article className="dashboard-card"><span>04</span><h2>Account &amp; plan</h2><p>Signed in as {user.email}. Billing is not enabled yet.</p><span>{membership?.role ?? "MEMBER"} · FREE</span></article>
+          <article className="dashboard-card"><span>04</span><h2>Account &amp; plan</h2><p>Signed in as {user.email}. Billing needs provider configuration.</p><span>{membership?.role ?? "MEMBER"} · FREE</span></article>
         </div>
+        <div id="knowledge-base"><KnowledgePanel /></div>
       </section>
     </main>
   );
