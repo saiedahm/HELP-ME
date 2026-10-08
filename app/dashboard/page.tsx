@@ -1,31 +1,55 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 
-const cards = [
-  ["01", "AI Assistant", "Configure the customer-facing assistant."],
-  ["02", "Knowledge Base", "Add FAQs, website content and documents."],
-  ["03", "Conversations", "Review customer questions and responses."],
-  ["04", "Usage & Plans", "Track usage before billing is connected."]
-];
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      id: true, name: true, email: true,
+      memberships: {
+        orderBy: { createdAt: "asc" },
+        take: 1,
+        select: {
+          role: true,
+          organization: {
+            select: {
+              id: true, name: true,
+              _count: { select: { conversations: true, knowledge: true, chatbots: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+  if (!user) redirect("/login");
+  const membership = user.memberships[0];
+  const organization = membership?.organization;
 
-export default function DashboardPage() {
   return (
     <main className="dashboard-page">
       <nav className="nav shell">
         <Link className="brand" href="/"><span className="brand-mark">H</span><span>HELP-ME</span></Link>
-        <Link className="button secondary" href="/">Back to site</Link>
+        <div className="nav-links"><span>{user.email}</span><Link className="button secondary" href="/api/auth/signout">Sign out</Link></div>
       </nav>
       <section className="dashboard shell">
         <div className="dashboard-head">
-          <div><span className="eyebrow">BUSINESS DASHBOARD</span><h1>Control center.</h1><p>The new foundation is ready for the next development phases.</p></div>
-          <span className="plan-badge">FOUNDATION · ACTIVE</span>
+          <div><span className="eyebrow">BUSINESS DASHBOARD</span><h1>Welcome, {user.name || "there"}.</h1><p>{organization ? organization.name : "Your workspace"} · Your account overview.</p></div>
+          <span className="plan-badge">FREE · STARTER</span>
         </div>
         <div className="stats">
-          <div><strong>0</strong><span>Conversations</span></div>
-          <div><strong>0</strong><span>Knowledge items</span></div>
-          <div><strong>FREE</strong><span>Development plan</span></div>
+          <div><strong>{organization?._count.conversations ?? 0}</strong><span>Saved conversations</span></div>
+          <div><strong>{organization?._count.knowledge ?? 0}</strong><span>Knowledge items</span></div>
+          <div><strong>{organization?._count.chatbots ?? 0}</strong><span>AI assistants</span></div>
         </div>
         <div className="dashboard-grid">
-          {cards.map(([num, title, text]) => <article className="dashboard-card" key={title}><span>{num}</span><h2>{title}</h2><p>{text}</p><Link href={title === "AI Assistant" ? "/chat" : "/dashboard"}>Open →</Link></article>)}
+          <article className="dashboard-card"><span>01</span><h2>AI Assistant</h2><p>Try the assistant and save messages to your workspace.</p><Link href="/chat">Open chat →</Link></article>
+          <article className="dashboard-card"><span>02</span><h2>Knowledge Base</h2><p>Knowledge-base management is the next module to activate.</p><span>Coming next</span></article>
+          <article className="dashboard-card"><span>03</span><h2>Conversations</h2><p>Your saved conversations are counted in this workspace.</p><span>{organization?._count.conversations ?? 0} saved</span></article>
+          <article className="dashboard-card"><span>04</span><h2>Account &amp; plan</h2><p>Signed in as {user.email}. Billing is not enabled yet.</p><span>{membership?.role ?? "MEMBER"} · FREE</span></article>
         </div>
       </section>
     </main>
