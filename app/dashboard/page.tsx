@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import KnowledgePanel from "./knowledge-panel";
 import SignOutButton from "./sign-out-button";
+import BillingPanel from "./billing-panel";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -53,6 +54,7 @@ export default async function DashboardPage() {
           <article className="dashboard-card"><span>04</span><h2>Account &amp; plan</h2><p>Signed in as {user.email}. Billing needs provider configuration.</p><span>{membership?.role ?? "MEMBER"} · FREE</span></article>
         </div>
         <div id="knowledge-base"><KnowledgePanel /></div>
+        <BillingPanel />
       </section>
     </main>
   );
