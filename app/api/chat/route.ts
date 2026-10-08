@@ -49,10 +49,10 @@ export async function POST(request: Request) {
       select: { title: true, content: true },
       take: 10
     });
-    const contextText = knowledge.map(item => item.title + ": " + item.content.slice(0, 1500)).join("\n");
+    const contextItems = knowledge.map(item => item.title + ": " + item.content.slice(0, 1500));
     const reply = await mockAI.generateReply({
       messages: [{ role: "user", content: message }],
-      context: { botName: "HELP-ME", knowledge: contextText }
+      context: { botName: "HELP-ME", knowledge: contextItems }
     });
     await prisma.message.create({ data: { conversationId: conversation.id, role: "assistant", content: reply } });
     return NextResponse.json({ reply, provider: "mock", conversationId: conversation.id });
