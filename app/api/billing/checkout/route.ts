@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Only a workspace owner or admin can change the plan." }, { status: 403 });
   }
 
-  const configuredBase = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+  const configuredBase = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
   const origin = configuredBase ? new URL(configuredBase).origin : new URL(request.url).origin;
   const stripe = new Stripe(secretKey);
   try {
