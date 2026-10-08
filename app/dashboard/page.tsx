@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import KnowledgePanel from "./knowledge-panel";
+import SignOutButton from "./sign-out-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -33,7 +34,7 @@ export default async function DashboardPage() {
     <main className="dashboard-page">
       <nav className="nav shell">
         <Link className="brand" href="/"><span className="brand-mark">H</span><span>HELP-ME</span></Link>
-        <div className="nav-links"><span>{user.email}</span><Link className="button secondary" href="/api/auth/signout">Sign out</Link></div>
+        <div className="nav-links"><span>{user.email}</span><SignOutButton /></div>
       </nav>
       <section className="dashboard shell">
         <div className="dashboard-head">
