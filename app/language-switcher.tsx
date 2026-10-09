@@ -18,6 +18,11 @@ declare global {
   }
 }
 
+function applyLanguageMetadata(language: string) {
+  document.documentElement.lang = language;
+  document.documentElement.dir = language === "ar" || language === "ur" ? "rtl" : "ltr";
+}
+
 export default function LanguageSwitcher() {
   const [language, setLanguage] = useState("en");
   const [ready, setReady] = useState(false);
@@ -26,6 +31,7 @@ export default function LanguageSwitcher() {
     const saved = window.localStorage.getItem("helpme-language");
     const initialLanguage = saved && LANGUAGES.some(([code]) => code === saved) ? saved : "en";
     setLanguage(initialLanguage);
+    applyLanguageMetadata(initialLanguage);
 
     const host = document.getElementById("google_translate_element");
     if (!host) {
@@ -93,6 +99,7 @@ export default function LanguageSwitcher() {
   function changeLanguage(next: string) {
     setLanguage(next);
     window.localStorage.setItem("helpme-language", next);
+    applyLanguageMetadata(next);
     const select = document.querySelector<HTMLSelectElement>(".goog-te-combo");
     if (select) {
       select.value = next;
