@@ -14,6 +14,7 @@ declare global {
   interface Window {
     google?: { translate?: { TranslateElement: new (options: Record<string, unknown>, elementId: string) => unknown } };
     __helpMeTranslateReady?: boolean;
+    helpMeGoogleTranslateInit?: () => void;
   }
 }
 
@@ -23,19 +24,33 @@ export default function LanguageSwitcher() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem("helpme-language");
-    if (saved && LANGUAGES.some(([code]) => code === saved)) setLanguage(saved);
-    const existing = document.getElementById("google_translate_element");
-    if (!existing) {
-      const host = document.createElement("div");
-      host.id = "google_translate_element";
-      host.setAttribute("aria-hidden", "true");
-      host.style.position = "absolute";
-      host.style.width = "1px";
-      host.style.height = "1px";
-      host.style.overflow = "hidden";
-      host.style.clipPath = "inset(50%)";
-      document.body.appendChild(host);
+    const initialLanguage = saved && LANGUAGES.some(([code]) => code === saved) ? saved : "en";
+    setLanguage(initialLanguage);
+
+    const host = document.getElementById("google_translate_element");
+    if (!host) {
+      const element = document.createElement("div");
+      element.id = "google_translate_element";
+      element.setAttribute("aria-hidden", "true");
+      element.style.position = "absolute";
+      element.style.width = "1px";
+      element.style.height = "1px";
+      element.style.overflow = "hidden";
+      element.style.clipPath = "inset(50%)";
+      document.body.appendChild(element);
     }
+
+    const applyInitialLanguage = () => {
+      const select = document.querySelector<HTMLSelectElement>(".goog-te-combo");
+      if (!select) return false;
+      if (initialLanguage !== "en" && select.value !== initialLanguage) {
+        select.value = initialLanguage;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      setReady(true);
+      return true;
+    };
+
     const init = () => {
       if (window.google?.translate?.TranslateElement && !window.__helpMeTranslateReady) {
         new window.google.translate.TranslateElement({
@@ -44,28 +59,35 @@ export default function LanguageSwitcher() {
           autoDisplay: false
         }, "google_translate_element");
         window.__helpMeTranslateReady = true;
-        setReady(true);
       }
+      if (window.google?.translate?.TranslateElement) setReady(true);
     };
-    const prior = document.querySelector<HTMLScriptElement>('script[data-helpme-translate="true"]');
-    if (!prior) {
-      const script = document.createElement("script");
+    window.helpMeGoogleTranslateInit = init;
+
+    let script = document.querySelector<HTMLScriptElement>('script[data-helpme-translate="true"]');
+    if (!script) {
+      script = document.createElement("script");
       script.src = "https://translate.google.com/translate_a/element.js?cb=helpMeGoogleTranslateInit";
       script.async = true;
       script.dataset.helpmeTranslate = "true";
-      (window as Window & { helpMeGoogleTranslateInit?: () => void }).helpMeGoogleTranslateInit = init;
       document.head.appendChild(script);
     } else {
-      (window as Window & { helpMeGoogleTranslateInit?: () => void }).helpMeGoogleTranslateInit = init;
       init();
     }
-    const check = window.setInterval(() => {
+
+    const initInterval = window.setInterval(() => {
       if (window.google?.translate?.TranslateElement) {
         init();
-        window.clearInterval(check);
+        window.clearInterval(initInterval);
       }
     }, 250);
-    return () => window.clearInterval(check);
+    const languageInterval = window.setInterval(() => {
+      if (applyInitialLanguage()) window.clearInterval(languageInterval);
+    }, 500);
+    return () => {
+      window.clearInterval(initInterval);
+      window.clearInterval(languageInterval);
+    };
   }, []);
 
   function changeLanguage(next: string) {
@@ -76,14 +98,8 @@ export default function LanguageSwitcher() {
       select.value = next;
       select.dispatchEvent(new Event("change", { bubbles: true }));
     } else if (next === "en") {
-      const reset = document.querySelector<HTMLSelectElement>(".goog-te-combo");
-      if (reset) {
-        reset.value = "en";
-        reset.dispatchEvent(new Event("change", { bubbles: true }));
-      } else {
-        document.cookie = "googtrans=/en/en; path=/";
-        window.location.reload();
-      }
+      document.cookie = "googtrans=/en/en; path=/";
+      window.location.reload();
     }
   }
 
