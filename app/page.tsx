@@ -80,7 +80,7 @@ export default function HomePage() {
       <a href="https://www.nexoraonline.de" className="footer-link">↗ &nbsp; www.nexoraonline.de</a>
       <a href="mailto:info@nexoraonline.de" className="footer-link">✉ &nbsp; info@nexoraonline.de</a>
       <nav className="legal-links" aria-label="Legal links">
-        <Link href="/widerruf">Widerruf</Link><i>|</i><Link href="/agb">AGB</Link><i>|</i><Link href="/datenschutz">Datenschutz</Link><i>|</i><Link href="/impressum">Impressum</Link><i>|</i><Link href="/cookie-einstellungen">Cookie-Einstellungen</Link>
+        <Link href="/terms">Terms of use</Link><i>|</i><Link href="/privacy">Privacy &amp; data use</Link>
       </nav>
       <small className="copyright">© 2026 HELP-ME. All rights reserved.</small>
     </footer>
