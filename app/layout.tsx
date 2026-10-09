@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import LanguageSwitcher from "./language-switcher";
 
 export const metadata: Metadata = {
   title: "HELP-ME — Intelligent Assistance",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <LanguageSwitcher />
+        {children}
+      </body>
     </html>
   );
 }
