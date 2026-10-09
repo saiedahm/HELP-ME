@@ -56,3 +56,24 @@ pnpm start
 ```
 
 Deployment verification trigger: latest main build must be produced from the current root application commit.
+
+## Required production configuration
+
+Do not enable paid subscriptions until these steps are complete and tested.
+
+1. Configure a managed PostgreSQL database and set `DATABASE_URL`.
+2. Set a strong, private `AUTH_SECRET` and set `NEXTAUTH_URL=https://www.helpmey.net`.
+3. Set `NEXT_PUBLIC_APP_URL=https://www.helpmey.net`.
+4. For AI replies, set `OPENAI_API_KEY` and optionally `OPENAI_MODEL=gpt-4o-mini`. Without the API key, the app deliberately uses its mock provider.
+5. In Stripe, create recurring prices for Business and Pro, then set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_BUSINESS`, and `STRIPE_PRICE_PRO`.
+6. Create a Stripe webhook endpoint at `https://www.helpmey.net/api/billing/webhook` for `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`. Set its signing secret as `STRIPE_WEBHOOK_SECRET`.
+7. After `DATABASE_URL` points to the intended database, apply the Prisma schema using the reviewed deployment procedure (for this repository, `npx prisma db push` is the current schema-sync option). Take a database backup first if the database already contains important data. Do not run schema changes against production until the target database is confirmed.
+8. Redeploy and test signup, login, knowledge create/delete, chat, conversation history, Stripe test checkout, webhook delivery, cancellation, and subscription status.
+
+Keep all secret values only in the deployment provider's encrypted environment settings. Never commit API keys or paste them into public issues.
+
+## Current scope and launch checklist
+
+Implemented in the current foundation: credentials-based account creation/login, organization membership, privacy/terms consent links, workspace knowledge CRUD, authenticated AI chat with persisted messages, workspace-scoped conversation history, Stripe Checkout creation, signed webhook processing, and dashboard subscription status display.
+
+Still requiring live configuration and end-to-end verification before commercial launch: production database schema sync, real OpenAI responses, Stripe test/live checkout and webhook delivery, public deployment verification, rate/usage limits, email verification/password recovery, legal review of privacy/terms and operator disclosures, and a public website embed widget with tenant-specific access controls. Do not market these unverified items as live features.
