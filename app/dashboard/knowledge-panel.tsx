@@ -28,6 +28,20 @@ export default function KnowledgePanel() {
 
   useEffect(() => { void load(); }, []);
 
+  async function removeItem(id: string) {
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch(`/api/knowledge/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not delete knowledge item.");
+      setItems(current => current.filter(item => item.id !== id));
+      setNotice("Knowledge item deleted.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete knowledge item.");
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving) return;
@@ -68,7 +82,7 @@ export default function KnowledgePanel() {
       <div style={{ marginTop: 18 }}>
         {loading ? <p>Loading workspace knowledge…</p> : items.length === 0 ? <p>No knowledge items yet. Add your first FAQ above.</p> : items.map(item =>
           <article key={item.id} style={{ borderTop: "1px solid var(--line)", padding: "12px 0" }}>
-            <strong>{item.title}</strong><p>{item.content}</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><strong>{item.title}</strong><button className="button secondary" type="button" onClick={() => void removeItem(item.id)} aria-label={`Delete ${item.title}`}>Delete</button></div><p>{item.content}</p>
             <small style={{ color: "var(--muted)" }}>{item.type} · {new Date(item.createdAt).toLocaleDateString()}</small>
           </article>
         )}
