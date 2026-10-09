@@ -3,6 +3,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { aiProvider } from "@/lib/ai/runtime";
 
+const MONTHLY_MESSAGE_LIMITS: Record<string, number> = {
+  free: 100,
+  starter: 100,
+  business: 1000,
+  pro: 5000
+};
+
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -23,6 +30,30 @@ export async function POST(request: Request) {
       select: { organizationId: true }
     });
     if (!membership) return NextResponse.json({ error: "No workspace is connected to this account." }, { status: 403 });
+
+    const subscription = await prisma.subscription.findFirst({
+      where: { organizationId: membership.organizationId, status: { in: ["active", "trialing"] } },
+      orderBy: { updatedAt: "desc" },
+      select: { plan: true }
+    });
+    const planKey = (subscription?.plan || "free").toLowerCase();
+    const monthlyLimit = MONTHLY_MESSAGE_LIMITS[planKey] ?? MONTHLY_MESSAGE_LIMITS.free;
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const usedThisMonth = await prisma.message.count({
+      where: {
+        role: "user",
+        createdAt: { gte: monthStart },
+        conversation: { organizationId: membership.organizationId }
+      }
+    });
+    if (usedThisMonth >= monthlyLimit) {
+      return NextResponse.json({
+        error: "Your workspace has reached its monthly message limit. Upgrade your plan or try again next month.",
+        code: "MONTHLY_USAGE_LIMIT",
+        usage: { used: usedThisMonth, limit: monthlyLimit, plan: planKey }
+      }, { status: 429 });
+    }
 
     let conversation;
     if (conversationId) {
@@ -69,7 +100,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       reply,
       provider: process.env.OPENAI_API_KEY ? "openai" : "mock",
-      conversationId: conversation.id
+      conversationId: conversation.id,
+      usage: { used: usedThisMonth + 1, limit: monthlyLimit, plan: planKey }
     });
   } catch (error) {
     console.error("Chat request failed:", error);
