@@ -49,13 +49,13 @@ export default function SignupPage() {
           <p className="muted">Use at least 10 characters for your password.</p>
           <label className="consent">
             <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} required />
-            <span>I accept the privacy notice and terms of use.</span>
+            <span>I accept the <Link className="text-link" href="/privacy">privacy notice</Link> and <Link className="text-link" href="/terms">terms of use</Link>.</span>
           </label>
           {error && <p className="status-message" role="alert">{error}</p>}
           <button className="button primary" type="submit" disabled={!accepted || loading}>{loading ? "Creating account…" : "Create account"}</button>
         </form>
         <p>Already registered? <Link className="text-link" href="/login">Sign in</Link></p>
-        <Link className="text-link" href="/privacy">Read privacy information</Link>
+        <Link className="text-link" href="/privacy">Read privacy information</Link> · <Link className="text-link" href="/terms">Terms of use</Link>
       </section>
     </main>
   );
