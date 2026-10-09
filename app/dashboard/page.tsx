@@ -7,6 +7,13 @@ import SignOutButton from "./sign-out-button";
 import BillingPanel from "./billing-panel";
 import ConversationsPanel from "./conversations-panel";
 
+const MONTHLY_MESSAGE_LIMITS: Record<string, number> = {
+  free: 100,
+  starter: 100,
+  business: 1000,
+  pro: 5000
+};
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
@@ -35,6 +42,20 @@ export default async function DashboardPage() {
   const subscription = organization?.subscriptions[0];
   const subscriptionIsActive = !!subscription && ["active", "trialing"].includes(subscription.status);
   const activePlan = subscriptionIsActive ? subscription.plan.toUpperCase() : "FREE";
+  const planKey = (subscriptionIsActive ? subscription.plan : "free").toLowerCase();
+  const monthlyLimit = MONTHLY_MESSAGE_LIMITS[planKey] ?? MONTHLY_MESSAGE_LIMITS.free;
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const usedThisMonth = organization
+    ? await prisma.message.count({
+        where: {
+          role: "user",
+          createdAt: { gte: monthStart },
+          conversation: { organizationId: organization.id }
+        }
+      })
+    : 0;
+  const usagePercent = Math.min(100, Math.round((usedThisMonth / monthlyLimit) * 100));
   const billingMessage = subscriptionIsActive
     ? "Your workspace plan is connected to the saved subscription status."
     : "Your workspace is currently on the free tier. Choose a paid plan below when billing is configured.";
@@ -55,6 +76,11 @@ export default async function DashboardPage() {
           <div><strong>{organization?._count.knowledge ?? 0}</strong><span>Knowledge items</span></div>
           <div><strong>{organization?._count.chatbots ?? 0}</strong><span>AI assistants</span></div>
         </div>
+        <article className="dashboard-card usage-card">
+          <div className="usage-heading"><div><span>MONTHLY USAGE</span><h2>{usedThisMonth.toLocaleString()} / {monthlyLimit.toLocaleString()} messages</h2></div><strong>{usagePercent}%</strong></div>
+          <div className="usage-track" role="progressbar" aria-label="Monthly message usage" aria-valuemin={0} aria-valuemax={monthlyLimit} aria-valuenow={Math.min(usedThisMonth, monthlyLimit)}><span style={{ width: usagePercent + "%" }} /></div>
+          <p>Usage resets at the start of each UTC calendar month. The limit applies to messages sent by your workspace.</p>
+        </article>
         <div className="dashboard-grid">
           <article className="dashboard-card"><span>01</span><h2>AI Assistant</h2><p>Try the assistant and save messages to your workspace.</p><Link href="/chat">Open chat →</Link></article>
           <article className="dashboard-card"><span>02</span><h2>Knowledge Base</h2><p>Add FAQs and service information to guide responses.</p><a href="#knowledge-base">Manage knowledge ↓</a></article>
