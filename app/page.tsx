@@ -75,6 +75,46 @@ export default function HomePage() {
       </div>
     </section>
 
+    <section className="section landing-extra" id="business">
+      <div className="section-heading">
+        <span className="eyebrow">HELP-ME BUSINESS</span>
+        <h2>Helpful AI support for your team</h2>
+        <p>Give customers quick answers while your team stays in control. Build a knowledge base, review conversations and guide requests to a human when needed.</p>
+      </div>
+      <div className="business-banner">
+        <div><h2>Make support simpler.</h2><p>Start with a workspace and grow as your support needs grow.</p></div>
+        <Link className="button primary" href="/signup">Create your workspace →</Link>
+      </div>
+    </section>
+
+    <section className="section landing-extra" id="pricing">
+      <div className="section-heading">
+        <span className="eyebrow">SIMPLE PLANS</span>
+        <h2>Start small. Scale when ready.</h2>
+        <p>Choose a starting point for your workspace. Any paid plan and billing availability should be confirmed in your account before purchase.</p>
+      </div>
+      <div className="feature-grid pricing-grid">
+        <article className="feature-card"><span className="feature-icon">01</span><h3>Free</h3><p>Explore the assistant and set up your workspace.</p><Link className="text-link" href="/signup">Get started →</Link></article>
+        <article className="feature-card"><span className="feature-icon">02</span><h3>Starter</h3><p>For small teams beginning to organize customer support.</p><Link className="text-link" href="/signup">Create account →</Link></article>
+        <article className="feature-card"><span className="feature-icon">03</span><h3>Business</h3><p>For growing teams that need shared knowledge and conversations.</p><Link className="text-link" href="/signup">Create account →</Link></article>
+        <article className="feature-card"><span className="feature-icon">04</span><h3>Pro</h3><p>For higher-volume support workflows and future expansion.</p><Link className="text-link" href="/signup">Create account →</Link></article>
+      </div>
+    </section>
+
+    <section className="section landing-extra" id="about">
+      <div className="section-heading">
+        <span className="eyebrow">ABOUT HELP-ME</span>
+        <h2>Clear answers, with people still in control.</h2>
+        <p>HELP-ME is an AI support platform concept for businesses and their customers. The assistant can help organize information and guide common questions, while important decisions should be checked with a qualified person.</p>
+      </div>
+      <div className="feature-grid">
+        <article className="feature-card"><span className="feature-icon">AI</span><h3>Knowledge-led</h3><p>Organize answers around your service information and FAQs.</p></article>
+        <article className="feature-card"><span className="feature-icon">↗</span><h3>Human handoff</h3><p>Keep a human involved when a request needs personal attention.</p></article>
+        <article className="feature-card"><span className="feature-icon">◎</span><h3>Multi-language</h3><p>Designed for support across language needs; availability depends on configuration.</p></article>
+        <article className="feature-card"><span className="feature-icon">◇</span><h3>Workspace</h3><p>Keep your account, conversations and knowledge in one place.</p></article>
+      </div>
+    </section>
+
     <footer className="landing-footer" id="contact">
       <Brand />
       <a href="https://www.nexoraonline.de" className="footer-link">↗ &nbsp; www.nexoraonline.de</a>
@@ -84,6 +124,5 @@ export default function HomePage() {
       </nav>
       <small className="copyright">© 2026 HELP-ME. All rights reserved.</small>
     </footer>
-    <div id="business" className="sr-only">HELP-ME Business</div><div id="pricing" className="sr-only">Pricing</div><div id="about" className="sr-only">About HELP-ME</div>
   </main>;
 }
