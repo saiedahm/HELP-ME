@@ -118,6 +118,7 @@ export default function HomePage() {
     <footer className="landing-footer" id="contact">
       <Brand />
       <a href="https://www.nexoraonline.de" className="footer-link">↗ &nbsp; www.nexoraonline.de</a>
+      <a href="https://www.digital-future.ai/" className="footer-link" target="_blank" rel="noopener noreferrer">↗ &nbsp; DIGITAL FUTURE STATE</a>
       <a href="mailto:info@nexoraonline.de" className="footer-link">✉ &nbsp; info@nexoraonline.de</a>
       <nav className="legal-links" aria-label="Legal links">
         <Link href="/terms">Terms of use</Link><i>|</i><Link href="/privacy">Privacy &amp; data use</Link>
